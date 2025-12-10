@@ -198,4 +198,79 @@ function save_uploaded_file(array $file, $filename_prefix = '') {
     return 'storage/app/private/requests/' . $name;
 }
 
+// Role-based access control helpers
+function current_user_barangay_id() {
+    global $conn;
+    $user_id = current_user_id();
+    if ($user_id <= 0) return null;
+    
+    $stmt = $conn->prepare('SELECT barangay_id FROM profile WHERE user_id = ? LIMIT 1');
+    if (!$stmt) return null;
+    $stmt->bind_param('i', $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    return $row ? $row['barangay_id'] : null;
+}
+
+function is_superadmin() {
+    return current_user_role() === ROLE_SUPERADMIN;
+}
+
+function is_admin() {
+    return current_user_role() === ROLE_ADMIN;
+}
+
+function is_staff() {
+    return current_user_role() === ROLE_STAFF;
+}
+
+function is_regular_user() {
+    return current_user_role() === ROLE_USER;
+}
+
+// Check if user can access a specific barangay
+// Superadmin can access all, others only their own barangay
+function can_access_barangay($barangay_id) {
+    if (is_superadmin()) {
+        return true;
+    }
+    
+    $user_barangay = current_user_barangay_id();
+    return $user_barangay === intval($barangay_id);
+}
+
+// Redirect unauthorized access
+function require_access($barangay_id = null) {
+    require_login();
+    
+    // If superadmin, allow access to everything
+    if (is_superadmin()) {
+        return true;
+    }
+    
+    // For non-superadmin, check if they're accessing their own barangay
+    if ($barangay_id !== null && !can_access_barangay($barangay_id)) {
+        redirect_to_dashboard();
+    }
+    
+    return true;
+}
+
+// Redirect user to their appropriate dashboard
+function redirect_to_dashboard() {
+    $role = current_user_role();
+    if ($role === ROLE_SUPERADMIN) {
+        header('Location: ' . WEB_ROOT . '/index.php?nav=superadmin-dashboard');
+    } elseif ($role === ROLE_ADMIN) {
+        header('Location: ' . WEB_ROOT . '/index.php?nav=admin-dashboard');
+    } elseif ($role === ROLE_STAFF) {
+        header('Location: ' . WEB_ROOT . '/index.php?nav=staff-dashboard');
+    } else {
+        header('Location: ' . WEB_ROOT . '/index.php?nav=user-dashboard');
+    }
+    exit;
+}
+
 // Close tag intentionally omitted

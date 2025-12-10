@@ -25,7 +25,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const showAlert = (el, type, msg) => {
         if (!el) return;
-        el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+        el.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${msg}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>`;
+        
+        // Scroll to alert if it's an error
+        if (type === 'danger') {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     };
 
     const buildDashboardUrl = (role) => {
@@ -87,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             registerAlert.innerHTML = '';
 
-            const requiredFields = ['first_name', 'last_name', 'username', 'password', 'password_confirm', 'email', 'barangay_id'];
+            const requiredFields = ['first_name', 'last_name', 'sex_id', 'username', 'password', 'password_confirm', 'email', 'barangay_id', 'birthdate'];
             const missing = requiredFields.filter(name => !(registerForm.querySelector(`[name="${name}"]`).value || '').trim());
             if (missing.length) {
                 showAlert(registerAlert, 'danger', 'Please fill all required fields.');
@@ -124,7 +132,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            const formData = new FormData(registerForm);
+            // Check email uniqueness
+            const email = (registerForm.querySelector('[name="email"]').value || '').trim();
+            if (email) {
+                fetch(`index.php?nav=register-api&action=check_email&email=${encodeURIComponent(email)}`, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                })
+                .then(r => {
+                    if (!r.ok) {
+                        throw new Error(`HTTP ${r.status}`);
+                    }
+                    return r.text();
+                })
+                .then(text => {
+                    if (!text) {
+                        console.error('Empty response from email check');
+                        submitRegisterForm();
+                        return;
+                    }
+                    const data = JSON.parse(text);
+                    if (data.exists) {
+                        showAlert(registerAlert, 'danger', 'This email is already registered.');
+                        return;
+                    }
+                    // Email is unique, proceed with registration
+                    submitRegisterForm();
+                })
+                .catch(err => {
+                    console.error('Email check error:', err);
+                    // Continue with registration if check fails
+                    submitRegisterForm();
+                });
+                return;
+            }
+
+            function submitRegisterForm() {
+                const formData = new FormData(registerForm);
             formData.set('action', 'register');
             setButtonLoading(registerBtn, true, 'Creating account...');
 
@@ -133,16 +177,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: formData,
                 credentials: 'same-origin'
             })
-            .then(response => response.json())
-            .then(json => {
+            .then(response => response.text())
+            .then(text => {
+                if (!text) {
+                    showAlert(registerAlert, 'danger', 'Empty response from server');
+                    setButtonLoading(registerBtn, false);
+                    return;
+                }
+                const json = JSON.parse(text);
                 if (json.success) {
                     showAlert(registerAlert, 'success', json.message || 'Registered successfully');
                     registerForm.reset();
 
                     const registerModalEl = document.getElementById('registerModal');
                     const loginModalEl = document.getElementById('loginModal');
+                    const loginAlert = document.getElementById('loginAlert');
                     const showLoginAfterHide = () => {
                         registerModalEl.removeEventListener('hidden.bs.modal', showLoginAfterHide);
+                        // Show success message in login modal
+                        if (loginAlert) {
+                            showAlert(loginAlert, 'success', 'Registration successful! Please log in with your credentials to proceed to verification.');
+                        }
                         const loginModal = new bootstrap.Modal(loginModalEl);
                         loginModal.show();
                     };
@@ -165,6 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 showAlert(registerAlert, 'danger', 'Network error: ' + err.message);
             })
             .finally(() => setButtonLoading(registerBtn, false));
+            }
         });
     }
 
@@ -298,6 +354,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(err => console.error('Failed to load barangays:', err));
+        });
+    }
+
+    // Toggle password visibility in register form
+    const toggleRegisterPassword = document.getElementById('toggleRegisterPassword');
+    if (toggleRegisterPassword) {
+        toggleRegisterPassword.addEventListener('click', function() {
+            const passwordInput = document.getElementById('registerPassword');
+            const passwordIcon = document.getElementById('registerPasswordIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordIcon.classList.remove('fa-eye');
+                passwordIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                passwordIcon.classList.remove('fa-eye-slash');
+                passwordIcon.classList.add('fa-eye');
+            }
         });
     }
 });

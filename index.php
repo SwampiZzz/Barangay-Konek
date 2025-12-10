@@ -19,27 +19,39 @@ if ($nav === 'logout') {
     exit;
 }
 
-// Map navigation to pages
+// Map navigation to pages with their required roles
+// Format: 'nav' => ['file' => 'path/to/file.php', 'roles' => [ROLE_*, ...] or null for public]
 $pages = [
-    'login' => 'pages/login.php',
-    'register' => 'pages/register.php',
-    'register-api' => 'middleware/register-api.php',
-    'user-dashboard' => 'pages/user-dashboard.php',
-    'create-request' => 'pages/create-request.php',
-    'request-list' => 'pages/request-list.php',
-    'request-ticket' => 'pages/request-ticket.php',
-    'complaint-list' => 'pages/complaint-list.php',
-    'announcements' => 'pages/announcements.php',
-    'manage-requests' => 'pages/manage-requests.php',
-    'manage-complaints' => 'pages/manage-complaints.php',
-    'staff-dashboard' => 'pages/staff-dashboard.php',
-    'admin-dashboard' => 'pages/admin-dashboard.php',
-    'manage-document-types' => 'pages/manage-document-types.php',
-    'superadmin-dashboard' => 'pages/superadmin-dashboard.php',
-    'admin-management' => 'pages/admin-management.php',
-    'barangay-overview' => 'pages/barangay-overview.php',
-    'activity-logs' => 'pages/activity-logs.php',
-    'profile' => 'pages/profile.php',
+    // Public pages
+    'login' => ['file' => 'pages/login.php', 'roles' => null],
+    'register' => ['file' => 'pages/register.php', 'roles' => null],
+    'register-api' => ['file' => 'middleware/register-api.php', 'roles' => null],
+    'terms-of-service' => ['file' => 'pages/terms-of-service.php', 'roles' => null],
+    'privacy-policy' => ['file' => 'pages/privacy-policy.php', 'roles' => null],
+    'announcements' => ['file' => 'pages/announcements.php', 'roles' => null],
+    
+    // User pages
+    'user-dashboard' => ['file' => 'pages/user-dashboard.php', 'roles' => [ROLE_USER]],
+    'create-request' => ['file' => 'pages/create-request.php', 'roles' => [ROLE_USER]],
+    'request-list' => ['file' => 'pages/request-list.php', 'roles' => [ROLE_USER]],
+    'request-ticket' => ['file' => 'pages/request-ticket.php', 'roles' => [ROLE_USER]],
+    'complaint-list' => ['file' => 'pages/complaint-list.php', 'roles' => [ROLE_USER]],
+    'profile' => ['file' => 'pages/profile.php', 'roles' => [ROLE_USER, ROLE_STAFF, ROLE_ADMIN, ROLE_SUPERADMIN]],
+    
+    // Staff pages
+    'staff-dashboard' => ['file' => 'pages/staff-dashboard.php', 'roles' => [ROLE_STAFF]],
+    'manage-requests' => ['file' => 'pages/manage-requests.php', 'roles' => [ROLE_STAFF, ROLE_ADMIN]],
+    'manage-complaints' => ['file' => 'pages/manage-complaints.php', 'roles' => [ROLE_STAFF, ROLE_ADMIN]],
+    'manage-document-types' => ['file' => 'pages/manage-document-types.php', 'roles' => [ROLE_ADMIN]],
+    
+    // Admin pages
+    'admin-dashboard' => ['file' => 'pages/admin-dashboard.php', 'roles' => [ROLE_ADMIN]],
+    'barangay-overview' => ['file' => 'pages/barangay-overview.php', 'roles' => [ROLE_ADMIN]],
+    'activity-logs' => ['file' => 'pages/activity-logs.php', 'roles' => [ROLE_ADMIN]],
+    
+    // Superadmin pages (can access everything)
+    'superadmin-dashboard' => ['file' => 'pages/superadmin-dashboard.php', 'roles' => [ROLE_SUPERADMIN]],
+    'admin-management' => ['file' => 'pages/admin-management.php', 'roles' => [ROLE_SUPERADMIN]],
 ];
 
 // If no nav specified, redirect logged-in users to their dashboard; otherwise show public home
@@ -67,13 +79,36 @@ if (!empty($_SESSION['user_id']) && in_array($nav, ['login', 'register'], true))
     exit;
 }
 
-$page_file = __DIR__ . '/' . ($pages[$nav] ?? '');
-if ($page_file && $page_file !== __DIR__ . '/' && file_exists($page_file)) {
-    include $page_file;
-} else {
+$page_file = __DIR__ . '/' . ($pages[$nav]['file'] ?? '');
+$page_config = $pages[$nav] ?? null;
+
+// Check if page exists in routing map
+if (!$page_config || !file_exists($page_file)) {
     http_response_code(404);
     $pageTitle = 'Not Found';
     require_once __DIR__ . '/public/header.php';
-    echo '<div class="container mt-5"><h1>Page Not Found</h1><p>Nav: ' . htmlspecialchars($nav) . '</p><p>File: ' . htmlspecialchars($page_file) . '</p></div>';
+    echo '<div class="container mt-5"><h1>Page Not Found</h1></div>';
+    require_once __DIR__ . '/public/footer.php';
+    exit;
+}
+
+// Check if page requires authentication
+if ($page_config['roles'] !== null) {
+    // Page is restricted - require login
+    if (empty($_SESSION['user_id'])) {
+        header('Location: ' . WEB_ROOT . '/index.php');
+        exit;
+    }
+    
+    // Check if user has required role
+    $user_role = current_user_role();
+    if (!in_array($user_role, $page_config['roles'], true)) {
+        // User doesn't have permission - redirect to their dashboard
+        redirect_to_dashboard();
+    }
+}
+
+// Include the page
+include $page_file;
     require_once __DIR__ . '/public/footer.php';
 }

@@ -107,9 +107,14 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
                     <div class="text-end small text-muted">
                         Need an account? <a href="#" data-switch-target="registerModal">Register here</a>
                     </div>
+                    <hr class="my-2">
+                    <div class="text-center small text-muted">
+                        <a href="index.php?nav=terms-of-service" target="_blank" class="text-muted text-decoration-none">Terms of Service</a> | 
+                        <a href="index.php?nav=privacy-policy" target="_blank" class="text-muted text-decoration-none">Privacy Policy</a>
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary-outline" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Login</button>
                 </div>
             </form>
@@ -147,16 +152,16 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
                             <input type="text" class="form-control" name="suffix" placeholder="Jr., Sr., etc.">
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label class="form-label">Sex</label>
-                            <select name="sex_id" class="form-select">
+                            <label class="form-label">Sex <span class="text-danger">*</span></label>
+                            <select name="sex_id" class="form-select" required>
                                 <option value="">-- Select --</option>
                                 <option value="1">Male</option>
                                 <option value="2">Female</option>
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Birthdate</label>
-                            <input type="date" class="form-control" name="birthdate">
+                            <label class="form-label">Birthdate <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" name="birthdate" required>
                         </div>
                     </div>
 
@@ -207,7 +212,12 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Password <span class="text-danger">*</span></label>
-                            <input type="password" class="form-control" name="password" required>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="registerPassword" name="password" required>
+                                <button class="btn btn-secondary" type="button" id="toggleRegisterPassword">
+                                    <i class="fas fa-eye" id="registerPasswordIcon"></i>
+                                </button>
+                            </div>
                             <small class="text-muted">Min. 8 characters</small>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -219,8 +229,13 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" id="termsCheck" required>
                         <label class="form-check-label" for="termsCheck">
-                            I agree to the <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a>
+                            I agree to the <a href="index.php?nav=terms-of-service" target="_blank">Terms of Service</a> and <a href="index.php?nav=privacy-policy" target="_blank">Privacy Policy</a>
                         </label>
+                    </div>
+
+                    <div class="alert alert-info small mb-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong> After registration, you will need to log in and complete the verification process. Your account will be verified by the barangay administrator before you can access all system features.
                     </div>
 
                     <input type="hidden" name="action" value="register">
@@ -229,7 +244,7 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
                         </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary-outline" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-success">Register</button>
                 </div>
             </form>

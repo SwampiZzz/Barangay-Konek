@@ -27,43 +27,24 @@ $dashboardNav = current_user_role() === ROLE_USER
 			</div>
 			<div class="col-lg-5">
 				<div class="hero-panel">
-					<div class="d-flex align-items-center mb-3">
-						<div class="ribbon">Fast Lane</div>
-						<span class="text-muted ms-3">Finish key actions in minutes</span>
-					</div>
 					<div class="action-list">
 						<div class="action-item">
 							<div>
 								<h6 class="mb-1" style="color: black;">Request a document</h6>
 								<p class="text-muted small mb-0">Upload requirements and monitor approvals.</p>
 							</div>
-							<?php if ($isLoggedIn): ?>
-								<a class="btn btn-sm btn-primary" href="index.php?nav=request-list">Start</a>
-							<?php else: ?>
-								<button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#loginModal">Start</button>
-							<?php endif; ?>
 						</div>
 						<div class="action-item">
 							<div>
 								<h6 class="mb-1" style="color: black;" >Submit a complaint</h6>
 								<p class="text-muted small mb-0">Escalate issues with transparent status updates.</p>
 							</div>
-							<?php if ($isLoggedIn): ?>
-								<a class="btn btn-sm btn-outline-primary" href="index.php?nav=complaint-list">File</a>
-							<?php else: ?>
-								<button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#loginModal">File</button>
-							<?php endif; ?>
 						</div>
 						<div class="action-item">
 							<div>
 								<h6 class="mb-1" style="color: black;" >Read official advisories</h6>
 								<p class="text-muted small mb-0">Stay updated on announcements and schedules.</p>
 							</div>
-							<?php if ($isLoggedIn): ?>
-								<a class="btn btn-sm btn-outline-primary" href="index.php?nav=announcements">View</a>
-							<?php else: ?>
-								<button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#loginModal">View</button>
-							<?php endif; ?>
 						</div>
 					</div>
 					<div class="mt-3 d-flex align-items-center text-muted small">
@@ -148,47 +129,6 @@ $dashboardNav = current_user_role() === ROLE_USER
 	</div>
 </section>
 
-<!-- <section class="section section--alt">
-	<div class="container container-narrow">
-		<div class="row mb-4">
-			<div class="col-lg-7">
-				<h3 class="h4 mb-1 section-title">How it works</h3>
-				<p class="text-muted mb-0 section-subtitle">A guided flow for residents and the team handling approvals.</p>
-			</div>
-		</div>
-		<div class="row g-3">
-			<div class="col-md-3">
-				<div class="process-step">
-					<div class="step-number">01</div>
-					<h6>Register</h6>
-					<p class="text-muted small mb-0">Create your account and fill in your profile details.</p>
-				</div>
-			</div>
-			<div class="col-md-3">
-				<div class="process-step">
-					<div class="step-number">02</div>
-					<h6>Submit</h6>
-					<p class="text-muted small mb-0">Send document requests or complaints with attachments.</p>
-				</div>
-			</div>
-			<div class="col-md-3">
-				<div class="process-step">
-					<div class="step-number">03</div>
-					<h6>Track</h6>
-					<p class="text-muted small mb-0">Monitor approvals, statuses, and timestamps in real time.</p>
-				</div>
-			</div>
-			<div class="col-md-3">
-				<div class="process-step">
-					<div class="step-number">04</div>
-					<h6>Resolve</h6>
-					<p class="text-muted small mb-0">Receive finalized documents and closure notes with full traceability.</p>
-				</div>
-			</div>
-		</div>
-	</div>
-</section> -->
-
 <section class="section">
 	<div class="container container-narrow">
 		<div class="cta-panel">
@@ -211,5 +151,5 @@ $dashboardNav = current_user_role() === ROLE_USER
 </section>
 
 <div class="container container-narrow mb-5">
-	<p class="home-footer-note text-center small">Need assistance? Contact <strong>devs@barangaykonek.local</strong></p>
+	<p class="home-footer-note text-center small">Need assistance or applying for your barangay? Contact <strong>itzmecj7@gmail.com</strong></p>
 </div>

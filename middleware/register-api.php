@@ -1,4 +1,8 @@
 <?php
+// Suppress errors to avoid JSON parsing issues
+ini_set('display_errors', '0');
+error_reporting(0);
+
 require_once __DIR__ . '/../config.php';
 
 header('Content-Type: application/json; charset=utf-8');
@@ -67,6 +71,22 @@ if ($action === 'get_barangays') {
         echo json_encode(['success' => true, 'barangays' => $barangays]);
     } else {
         echo json_encode(['success' => false, 'message' => 'Failed to fetch barangays']);
+    }
+    exit;
+}
+
+if ($action === 'check_email') {
+    $email = trim($_GET['email'] ?? '');
+    if (!$email) {
+        echo json_encode(['success' => false, 'message' => 'Email is required']);
+        exit;
+    }
+    
+    $res = db_query('SELECT id FROM profile WHERE email = ?', 's', [$email]);
+    if ($res && $res->num_rows > 0) {
+        echo json_encode(['success' => false, 'exists' => true]);
+    } else {
+        echo json_encode(['success' => true, 'exists' => false]);
     }
     exit;
 }

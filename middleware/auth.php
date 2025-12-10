@@ -1,4 +1,8 @@
 <?php
+// Suppress all output except JSON responses
+ini_set('display_errors', '0');
+error_reporting(0);
+
 require_once __DIR__ . '/../config.php';
 
 // This file is ONLY for AJAX auth endpoints (login/register).
@@ -47,10 +51,10 @@ if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME']) ?? '') {
         $sex_id = intval($_POST['sex_id'] ?? 0) ?: null;
         $email = trim($_POST['email'] ?? '');
         $contact_number = trim($_POST['contact_number'] ?? '');
-        $birthdate = trim($_POST['birthdate'] ?? null) ?: null;
+        $birthdate = trim($_POST['birthdate'] ?? '') ?: null;
         $barangay_id = intval($_POST['barangay_id'] ?? 0) ?: null;
 
-        if ($username === '' || $password === '' || $password_confirm === '') {
+        if ($username === '' || $password === '' || $password_confirm === '' || !$birthdate) {
             echo json_encode(['success' => false, 'message' => 'Please fill required fields.']);
             exit;
         }
@@ -83,6 +87,21 @@ if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME']) ?? '') {
             exit;
         }
 
+        // Validate email uniqueness
+        if ($email) {
+            global $conn;
+            $stmt = $conn->prepare('SELECT id FROM profile WHERE email = ?');
+            $stmt->bind_param('s', $email);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($result->num_rows > 0) {
+                $stmt->close();
+                echo json_encode(['success' => false, 'message' => 'This email is already registered.']);
+                exit;
+            }
+            $stmt->close();
+        }
+
         // Create user
         $reg = register_user($username, $password, ROLE_USER);
         if (!$reg['success']) {
@@ -96,11 +115,12 @@ if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME']) ?? '') {
         global $conn;
         $stmt = $conn->prepare('INSERT INTO profile (last_name, first_name, suffix, sex_id, email, contact_number, birthdate, user_id, barangay_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
         if (!$stmt) {
-            echo json_encode(['success' => false, 'message' => 'DB error preparing profile insert.']);
+            echo json_encode(['success' => false, 'message' => 'DB error preparing profile insert: ' . $conn->error]);
             exit;
         }
         
-        $types = 'ssisssii';
+        // Fix bind_param order: last_name(s), first_name(s), suffix(s), sex_id(i), email(s), contact_number(s), birthdate(s), user_id(i), barangay_id(i)
+        $types = 'sssiissii';
         $stmt->bind_param($types, $last_name, $first_name, $suffix, $sex_id, $email, $contact_number, $birthdate, $user_id, $barangay_id);
         
         if (!$stmt->execute()) {
