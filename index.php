@@ -110,5 +110,3 @@ if ($page_config['roles'] !== null) {
 
 // Include the page
 include $page_file;
-    require_once __DIR__ . '/public/footer.php';
-}
