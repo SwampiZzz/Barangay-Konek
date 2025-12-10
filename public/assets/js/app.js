@@ -118,10 +118,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            // Validate contact number format (09xx-xxx-xxxx)
+            // Validate contact number format (09xx-xxx-xxxx or 09xxxxxxxxx)
             const contactNumber = (registerForm.querySelector('[name="contact_number"]').value || '').trim();
-            if (contactNumber && !/^09\d{2}-\d{3}-\d{4}$/.test(contactNumber)) {
-                showAlert(registerAlert, 'danger', 'Contact number must follow format: 09XX-XXX-XXXX');
+            if (contactNumber && !(/^09\d{2}-\d{3}-\d{4}$/.test(contactNumber) || /^09\d{9}$/.test(contactNumber))) {
+                showAlert(registerAlert, 'danger', 'Contact number must follow format: 09XX-XXX-XXXX or 09XXXXXXXXX');
                 return;
             }
 
@@ -201,22 +201,17 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Show detailed success message in login modal - after modal is shown
                         setTimeout(() => {
                             if (loginAlert) {
-                                const successHTML = `
-                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                        <div style="display: flex; gap: 1rem; align-items: flex-start;">
-                                            <i class="fas fa-check-circle" style="color: #28a745; font-size: 1.5rem; flex-shrink: 0; margin-top: 0.2rem;"></i>
-                                            <div style="padding-right: 2rem;">
-                                                <strong style="font-size: 1.1rem; color: #155724;">✓ Registration Successful!</strong>
-                                                <p style="margin: 0.75rem 0 0 0; font-size: 0.95rem; color: #155724;">Your account has been created successfully. You can now log in with your username and password below.</p>
-                                                <p style="margin: 0.75rem 0 0 0; font-size: 0.9rem; color: #155724; border-left: 3px solid #28a745; padding-left: 1rem;">
-                                                    <i class="fas fa-info-circle me-1"></i><strong>Next Steps:</strong> After logging in, your account will need to be verified by the barangay administrator before you can submit requests or complaints.
-                                                </p>
-                                            </div>
+                                loginAlert.className = 'alert alert-success alert-dismissible fade show mb-3';
+                                loginAlert.innerHTML = `
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                                        <i class="fas fa-check-circle" style="color: #28a745; font-size: 1.5rem; flex-shrink: 0;"></i>
+                                        <div style="flex: 1;">
+                                            <strong style="font-size: 1.05rem; display: block; margin-bottom: 0.5rem;">Registration Successful!</strong>
+                                            <p style="margin: 0; font-size: 0.9rem;">Your account has been created. Please log in below.</p>
                                         </div>
                                     </div>
                                 `;
-                                loginAlert.innerHTML = successHTML;
                             }
                         }, 100);
                     };

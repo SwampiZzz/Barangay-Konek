@@ -346,9 +346,38 @@ require_once __DIR__ . '/../public/header.php';
             </div>
         <?php endif; ?>
 
-        <!-- Stats Cards Row -->
-        <div class="row mb-5 g-3">
-            <div class="col-md-6 col-lg-3">
+        <!-- Announcements Section - Featured -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="dashboard-card">
+                    <div class="dashboard-card-header" style="border-bottom-color: #1a5490;">
+                        <i class="fas fa-megaphone" style="color: #1a5490;"></i>
+                        <h5>Barangay Announcements</h5>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <?php if (count($announcements) > 0): ?>
+                            <div style="display: flex; flex-direction: column; gap: 0;">
+                                <?php foreach ($announcements as $ann): ?>
+                                    <div class="announcement-item">
+                                        <h6 class="announcement-title"><i class="fas fa-bullhorn me-2" style="color: #1a5490; font-size: 0.9rem;"></i><?php echo e($ann['title']); ?></h6>
+                                        <small class="announcement-date"><i class="fas fa-calendar-alt me-1"></i><?php echo date('F d, Y', strtotime($ann['created_at'])); ?></small>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <p style="color: #999; text-align: center; margin: 1.5rem 0;">No announcements from your barangay at the moment.</p>
+                        <?php endif; ?>
+                    </div>
+                    <div style="border-top: 1px solid #e5e7eb; padding: 1rem 1.5rem; background: linear-gradient(135deg, rgba(26, 84, 144, 0.03), transparent);">
+                        <a href="index.php?nav=announcements" style="color: #1a5490; text-decoration: none; font-weight: 700; font-size: 0.9rem;"><i class="fas fa-arrow-right me-1"></i>View All Announcements</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards Row - Simplified (3 cards) -->
+        <div class="row mb-4 g-3">
+            <div class="col-md-4">
                 <div class="dashboard-stat-card" style="border-top-color: #1a5490;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 1;">
                         <div>
@@ -360,11 +389,11 @@ require_once __DIR__ . '/../public/header.php';
                 </div>
             </div>
 
-            <div class="col-md-6 col-lg-3">
+            <div class="col-md-4">
                 <div class="dashboard-stat-card" style="border-top-color: #f59e0b;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 1;">
                         <div>
-                            <p class="stat-label">Pending</p>
+                            <p class="stat-label">Pending Requests</p>
                             <h2 class="stat-number" style="color: #f59e0b;"><?php echo db_query('SELECT COUNT(*) as cnt FROM request WHERE user_id = ? AND request_status_id = 1', 'i', [$user_id])->fetch_assoc()['cnt'] ?? 0; ?></h2>
                         </div>
                         <i class="fas fa-clock" style="font-size: 2rem; opacity: 0.15;"></i>
@@ -372,23 +401,11 @@ require_once __DIR__ . '/../public/header.php';
                 </div>
             </div>
 
-            <div class="col-md-6 col-lg-3">
-                <div class="dashboard-stat-card" style="border-top-color: #dc2626;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 1;">
-                        <div>
-                            <p class="stat-label">Complaints</p>
-                            <h2 class="stat-number" style="color: #dc2626;"><?php echo db_query('SELECT COUNT(*) as cnt FROM complaint WHERE user_id = ?', 'i', [$user_id])->fetch_assoc()['cnt'] ?? 0; ?></h2>
-                        </div>
-                        <i class="fas fa-exclamation-circle" style="font-size: 2rem; opacity: 0.15;"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-lg-3">
+            <div class="col-md-4">
                 <div class="dashboard-stat-card" style="border-top-color: #28a745;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 1;">
                         <div>
-                            <p class="stat-label">Status</p>
+                            <p class="stat-label">Verification Status</p>
                             <div style="margin-top: 0.5rem;">
                                 <?php if ($is_verified): ?>
                                     <span class="verification-badge verified"><i class="fas fa-check me-1"></i>Verified</span>
@@ -449,17 +466,20 @@ require_once __DIR__ . '/../public/header.php';
                     <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.875rem;">
                         <?php if ($is_verified): ?>
                             <a href="index.php?nav=create-request" class="action-btn action-btn-primary">
-                                <i class="fas fa-plus me-2"></i>New Request
+                                <i class="fas fa-plus me-2"></i>New Document Request
+                            </a>
+                            <a href="index.php?nav=request-list" class="action-btn action-btn-outline">
+                                <i class="fas fa-list me-2"></i>View My Requests
                             </a>
                             <a href="index.php?nav=complaint-list" class="action-btn action-btn-danger">
-                                <i class="fas fa-exclamation-circle me-2"></i>File Complaint
+                                <i class="fas fa-exclamation-circle me-2"></i>View Complaints
                             </a>
                         <?php else: ?>
-                            <p style="color: #999; font-size: 0.9rem; margin: 0; text-align: center; padding: 0.5rem;">Complete verification to submit requests or complaints.</p>
+                            <p style="color: #999; font-size: 0.9rem; margin: 0; text-align: center; padding: 0.5rem;">Complete verification to submit requests or file complaints.</p>
+                            <a href="index.php?nav=request-list" class="action-btn action-btn-outline">
+                                <i class="fas fa-list me-2"></i>View My Requests
+                            </a>
                         <?php endif; ?>
-                        <a href="index.php?nav=request-list" class="action-btn action-btn-outline">
-                            <i class="fas fa-list me-2"></i>View Requests
-                        </a>
                         <a href="index.php?nav=profile" class="action-btn" style="background: white; color: #666; border: 2px solid #d1d5db; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='#f8f9fa'; this.style.borderColor='#9ca3af';" onmouseout="this.style.backgroundColor='white'; this.style.borderColor='#d1d5db';">
                             <i class="fas fa-user me-2"></i>My Profile
                         </a>
@@ -468,50 +488,24 @@ require_once __DIR__ . '/../public/header.php';
             </div>
         </div>
 
-        <!-- Announcements and Complaints Row -->
+        <!-- Recent Complaints Section -->
         <div class="row g-3">
-            <!-- Announcements -->
-            <div class="col-lg-8">
-                <div class="dashboard-card">
-                    <div class="dashboard-card-header" style="border-bottom-color: #1a5490;">
-                        <i class="fas fa-megaphone" style="color: #1a5490;"></i>
-                        <h5>Recent Announcements</h5>
-                    </div>
-                    <div style="padding: 1.5rem;">
-                        <?php if (count($announcements) > 0): ?>
-                            <div style="display: flex; flex-direction: column; gap: 0;">
-                                <?php foreach ($announcements as $ann): ?>
-                                    <div class="announcement-item">
-                                        <h6 class="announcement-title"><?php echo e($ann['title']); ?></h6>
-                                        <small class="announcement-date"><i class="fas fa-calendar-alt me-1"></i><?php echo date('F d, Y', strtotime($ann['created_at'])); ?></small>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php else: ?>
-                            <p style="color: #999; text-align: center; margin: 1.5rem 0;">No announcements at the moment.</p>
-                        <?php endif; ?>
-                    </div>
-                    <div style="border-top: 1px solid #e5e7eb; padding: 1rem 1.5rem; background: linear-gradient(135deg, rgba(26, 84, 144, 0.03), transparent);">
-                        <a href="index.php?nav=announcements" style="color: #1a5490; text-decoration: none; font-weight: 700; font-size: 0.9rem;"><i class="fas fa-arrow-right me-1"></i>View All Announcements</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recent Complaints -->
-            <div class="col-lg-4">
+            <div class="col-12">
                 <div class="dashboard-card">
                     <div class="dashboard-card-header" style="border-bottom-color: #dc2626;">
-                        <i class="fas fa-exclamation" style="color: #dc2626;"></i>
-                        <h5 style="color: #dc2626;">Recent Complaints</h5>
+                        <i class="fas fa-exclamation-triangle" style="color: #dc2626;"></i>
+                        <h5 style="color: #dc2626;">My Complaints</h5>
                     </div>
                     <div style="padding: 1.5rem;">
                         <?php if (count($recent_complaints) > 0): ?>
-                            <div style="display: flex; flex-direction: column; gap: 0.875rem;">
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
                                 <?php foreach ($recent_complaints as $comp): ?>
                                     <div class="complaint-item">
-                                        <h6 class="complaint-title"><?php echo e(substr($comp['title'], 0, 45)); ?><?php echo strlen($comp['title']) > 45 ? '...' : ''; ?></h6>
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
-                                            <small class="request-meta">ID: <?php echo $comp['id']; ?></small>
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <div>
+                                                <h6 class="complaint-title"><?php echo e(substr($comp['title'], 0, 60)); ?><?php echo strlen($comp['title']) > 60 ? '...' : ''; ?></h6>
+                                                <small class="request-meta">Complaint ID: <?php echo $comp['id']; ?></small>
+                                            </div>
                                             <span class="status-badge status-<?php $status_id = intval($comp['complaint_status_id']); echo $status_id === 1 ? 'pending' : ($status_id === 2 ? 'processing' : ($status_id === 3 ? 'rejected' : 'completed')); ?>">
                                                 <?php echo e($comp['status_name']); ?>
                                             </span>
@@ -520,11 +514,11 @@ require_once __DIR__ . '/../public/header.php';
                                 <?php endforeach; ?>
                             </div>
                         <?php else: ?>
-                            <p style="color: #999; text-align: center; margin: 1.5rem 0; font-size: 0.9rem;">No complaints filed.</p>
+                            <p style="color: #999; text-align: center; margin: 1.5rem 0;">No complaints filed. <?php if ($is_verified): ?><a href="index.php?nav=complaint-list" style="color: #dc2626; text-decoration: none; font-weight: 700;">File one if needed</a><?php endif; ?></p>
                         <?php endif; ?>
                     </div>
                     <div style="border-top: 1px solid #e5e7eb; padding: 1rem 1.5rem; background: linear-gradient(135deg, rgba(220, 38, 38, 0.03), transparent);">
-                        <a href="index.php?nav=complaint-list" style="color: #dc2626; text-decoration: none; font-weight: 700; font-size: 0.9rem;"><i class="fas fa-arrow-right me-1"></i>View All</a>
+                        <a href="index.php?nav=complaint-list" style="color: #dc2626; text-decoration: none; font-weight: 700; font-size: 0.9rem;"><i class="fas fa-arrow-right me-1"></i>View All Complaints</a>
                     </div>
                 </div>
             </div>

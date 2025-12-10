@@ -19,7 +19,7 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
 ?>
 
 <!-- Primary bar: brand + auth/profile -->
-<nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 28%, #0b3d91 27%, #0b3d91 100%);">
+<nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 40%, #0b3d91 27%, #0b3d91 100%);">
     <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center fw-semibold" href="<?php echo WEB_ROOT; ?>/index.php" style="color: #0b3d91;">
             <img src="<?php echo WEB_ROOT; ?>/public/assets/img/Barangay-Konek-Logo-Only.png" alt="Barangay Konek" style="height:42px;" class="me-2">
@@ -57,37 +57,37 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
 
 <?php if (!empty($_SESSION['user_id'])): ?>
 <!-- Secondary bar: role-based navigation -->
-<nav class="navbar navbar-expand-lg navbar-light border-bottom" style="background:#f2f5fa;">
+<nav class="navbar navbar-expand-lg navbar-light border-bottom py-1" style="background:#f2f5fa; font-size: 0.9rem;">
     <div class="container-fluid">
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSecondary">
+        <button class="navbar-toggler navbar-toggler-sm" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSecondary">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSecondary">
             <ul class="navbar-nav me-auto">
                 <?php if ($role === ROLE_USER): ?>
-                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=user-dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=user-dashboard">Dashboard</a></li>
                     <li class="nav-item">
-                        <a class="nav-link <?php echo !$is_verified ? 'disabled' : ''; ?>" href="<?php echo $is_verified ? WEB_ROOT . '/index.php?nav=request-list' : '#'; ?>" <?php echo !$is_verified ? 'style="cursor: not-allowed; opacity: 0.6;" title="Verify your account to access requests"' : ''; ?>>Requests</a>
+                        <a class="nav-link py-2 <?php echo !$is_verified ? 'disabled' : ''; ?>" href="<?php echo $is_verified ? WEB_ROOT . '/index.php?nav=request-list' : '#'; ?>" <?php echo !$is_verified ? 'style="cursor: not-allowed; opacity: 0.6;" title="Verify your account to access requests"' : ''; ?>>Requests</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <?php echo !$is_verified ? 'disabled' : ''; ?>" href="<?php echo $is_verified ? WEB_ROOT . '/index.php?nav=complaint-list' : '#'; ?>" <?php echo !$is_verified ? 'style="cursor: not-allowed; opacity: 0.6;" title="Verify your account to access complaints"' : ''; ?>>Complaints</a>
+                        <a class="nav-link py-2 <?php echo !$is_verified ? 'disabled' : ''; ?>" href="<?php echo $is_verified ? WEB_ROOT . '/index.php?nav=complaint-list' : '#'; ?>" <?php echo !$is_verified ? 'style="cursor: not-allowed; opacity: 0.6;" title="Verify your account to access complaints"' : ''; ?>>Complaints</a>
                     </li>
-                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=announcements">Announcements</a></li>
+                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=announcements">Announcements</a></li>
                 <?php elseif ($role === ROLE_STAFF): ?>
-                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=staff-dashboard">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-requests">Manage Requests</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-complaints">Manage Complaints</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=announcements">Announcements</a></li>
+                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=staff-dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-requests">Manage Requests</a></li>
+                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-complaints">Manage Complaints</a></li>
+                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=announcements">Announcements</a></li>
                 <?php elseif ($role === ROLE_ADMIN): ?>
-                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=admin-dashboard">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-requests">Manage Requests</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-complaints">Manage Complaints</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=announcements">Announcements</a></li>
+                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=admin-dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-requests">Manage Requests</a></li>
+                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-complaints">Manage Complaints</a></li>
+                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=announcements">Announcements</a></li>
                 <?php elseif ($role === ROLE_SUPERADMIN): ?>
-                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=superadmin-dashboard">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=admin-management">Admin Management</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=barangay-overview">Barangay Overview</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=activity-logs">Activity Logs</a></li>
+                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=superadmin-dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=admin-management">Admin Management</a></li>
+                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=barangay-overview">Barangay Overview</a></li>
+                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=activity-logs">Activity Logs</a></li>
                 <?php endif; ?>
             </ul>
         </div>
