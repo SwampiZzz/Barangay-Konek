@@ -1,0 +1,260 @@
+/* Barangay Konek - Custom Styles */
+
+:root {
+    /* Government-style palette: deep navy primary + teal accent + muted neutrals */
+    --primary-color: #0b3d91; /* deep navy */
+    --accent-color: #0b8b72;  /* teal/emerald accent */
+    --muted-color: #6c757d;
+    --success-color: #1f8a5f;
+    --danger-color: #c33;
+    --warning-color: #e3b23c;
+    --info-color: #17a2b8;
+    --bg: #f4f6f8;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    color: #222;
+}
+
+main {
+    flex: 1;
+}
+
+.card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.badge {
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+}
+
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: #072b68;
+    border-color: #072b68;
+}
+
+.btn-outline-success {
+    color: var(--accent-color);
+    border-color: rgba(11,61,145,0.06);
+}
+.btn-outline-success:hover {
+    background-color: rgba(11,61,145,0.04);
+}
+
+.table th {
+    font-weight: 600;
+    color: #333;
+    background-color: #f8f9fa;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.form-control, .form-select {
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.18rem rgba(11,61,145,0.12);
+}
+
+/* Hero styles */
+.hero-card {
+    overflow: hidden;
+    border-radius: 10px;
+}
+.hero-content {
+    padding: 3rem 2.5rem;
+}
+.hero-logo {
+    max-height: 64px;
+}
+.hero-image {
+    background-size: cover;
+    background-position: center;
+    min-height: 420px;
+    position: relative;
+}
+.hero-overlay {
+    /* content wrapper - stays above the dark overlay */
+    position: relative;
+    z-index: 2;
+    background: linear-gradient(180deg, rgba(11,61,145,0.06), rgba(11,61,145,0.02));
+}
+
+/* Darken the hero background image by adding a semi-opaque layer */
+.hero-image::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* adjust alpha to control darkness (0.0 - 0.8) */
+    background: linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.35));
+    z-index: 1;
+}
+
+/* Card tweaks */
+.card {
+    border: 1px solid rgba(11,61,145,0.06);
+}
+
+/* Global sections */
+.section {
+    padding: 0; /* reset: sections will receive explicit paddings below */
+}
+
+/* Explicit per-section paddings (manual control) */
+/* Hero uses its own overlay padding; keep hero tight */
+.section.hero {
+    padding: 0;
+}
+/* Alternate sections (light background) - slightly larger spacing */
+.section.section--alt {
+    padding: 3rem 0;
+}
+/* Standard content sections (not hero, not alt) */
+.section:not(.section--alt):not(.hero) {
+    padding: 4.5rem 0;
+}
+.section--alt {
+    background-color: #f7f9fb;
+}
+.container-narrow {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* Feature grid */
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+}
+.feature-item {
+    background: #fff;
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid rgba(11,61,145,0.04);
+}
+.feature-card {
+    border-radius: 10px;
+    padding: 1.25rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+.feature-card .icon-wrap {
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(11,61,145,0.06);
+    margin-bottom: 0.75rem;
+}
+.step-card {
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-align: center;
+    border: 1px solid rgba(11,61,145,0.04);
+    background: #fff;
+}
+.step-card .icon {
+    font-size: 1.6rem;
+    color: var(--primary-color);
+}
+.feature-item h4 { margin-top: 0.5rem; }
+
+/* How it works */
+.steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+.step {
+    background: transparent;
+    text-align: center;
+    padding: 1rem;
+}
+.step .icon {
+    font-size: 2rem;
+    color: var(--primary-color);
+    background: rgba(11,61,145,0.06);
+    width: 64px;
+    height: 64px;
+    line-height: 64px;
+    display: inline-block;
+    border-radius: 50%;
+}
+
+/* CTA band */
+.cta-band {
+    background: linear-gradient(90deg, rgba(11,61,145,0.95), rgba(11,139,114,0.95));
+    color: #fff;
+    padding: 2rem 0;
+    border-radius: 8px;
+}
+.cta-band .btn {
+    box-shadow: 0 6px 18px rgba(11,61,145,0.18);
+}
+
+/* Footer small touches for home */
+.home-footer-note { color: #6b7280; }
+
+@media (max-width: 768px) {
+    .hero-content { padding: 2rem; }
+    .hero-image { min-height: 260px; }
+    /* Mobile: increase spacing slightly for stacked layout */
+    .section.section--alt { padding: 2rem 0; }
+    .section:not(.section--alt):not(.hero) { padding: 1.5rem 0; }
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+.alert {
+    border-radius: 6px;
+    border: none;
+}
+
+@media (max-width: 768px) {
+    .container-fluid {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
