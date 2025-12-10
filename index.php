@@ -23,6 +23,7 @@ if ($nav === 'logout') {
 $pages = [
     'login' => 'pages/login.php',
     'register' => 'pages/register.php',
+    'register-api' => 'middleware/register-api.php',
     'user-dashboard' => 'pages/user-dashboard.php',
     'create-request' => 'pages/create-request.php',
     'request-list' => 'pages/request-list.php',

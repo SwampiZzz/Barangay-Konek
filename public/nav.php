@@ -128,29 +128,33 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
             <form id="registerForm">
                 <div class="modal-body">
                     <div id="registerAlert"></div>
+                    
+                    <h6 class="mb-3">Personal Information</h6>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">First Name</label>
+                            <label class="form-label">First Name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="first_name" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Last Name</label>
+                            <label class="form-label">Last Name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="last_name" required>
                         </div>
                     </div>
+                    
                     <div class="row">
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
                             <label class="form-label">Suffix</label>
-                            <input type="text" class="form-control" name="suffix">
+                            <input type="text" class="form-control" name="suffix" placeholder="Jr., Sr., etc.">
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
                             <label class="form-label">Sex</label>
                             <select name="sex_id" class="form-select">
+                                <option value="">-- Select --</option>
                                 <option value="1">Male</option>
                                 <option value="2">Female</option>
                             </select>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-6 mb-3">
                             <label class="form-label">Birthdate</label>
                             <input type="date" class="form-control" name="birthdate">
                         </div>
@@ -158,30 +162,65 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Email</label>
-                            <input type="email" class="form-control" name="email">
+                            <label class="form-label">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" name="email" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Contact Number</label>
-                            <input type="text" class="form-control" name="contact_number">
+                            <input type="text" class="form-control" name="contact_number" placeholder="09XX-XXX-XXXX">
+                        </div>
+                    </div>
+                    <hr>
+                    <h6 class="mb-3 mt-4">Barangay Location</h6>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Province <span class="text-danger">*</span></label>
+                            <select name="province_id" id="provinceSelect" class="form-select" required>
+                                <option value="">-- Select Province --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">City <span class="text-danger">*</span></label>
+                            <select name="city_id" id="citySelect" class="form-select" required>
+                                <option value="">-- Select City --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Barangay <span class="text-danger">*</span></label>
+                            <select name="barangay_id" id="barangaySelect" class="form-select" required>
+                                <option value="">-- Select Barangay --</option>
+                            </select>
                         </div>
                     </div>
 
+                    <div class="alert alert-info small mb-3">
+                        <i class="bi bi-info-circle me-1"></i><strong>Note:</strong> If your barangay is not in the list, your barangay is not yet using this service.
+                    </div>
                     <hr>
-                    <h6>Account Credentials</h6>
+                    <h6 class="mb-3 mt-4">Account Credentials</h6>
                     <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Username</label>
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Username (for login) <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="username" required>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Password</label>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Password <span class="text-danger">*</span></label>
                             <input type="password" class="form-control" name="password" required>
+                            <small class="text-muted">Min. 8 characters</small>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Confirm Password</label>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Confirm Password <span class="text-danger">*</span></label>
                             <input type="password" class="form-control" name="password_confirm" required>
                         </div>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                        <label class="form-check-label" for="termsCheck">
+                            I agree to the <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a>
+                        </label>
                     </div>
 
                     <input type="hidden" name="action" value="register">

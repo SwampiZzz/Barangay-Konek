@@ -202,11 +202,9 @@ main {
 
 /* Home refresh */
 .home-hero {
-    background: radial-gradient(circle at 10% 20%, rgba(11,139,114,0.18), transparent 25%),
-                radial-gradient(circle at 80% 0%, rgba(11,61,145,0.25), transparent 30%),
-                linear-gradient(120deg, #0b3d91 0%, #0b3d91 55%, #0b8b72 100%);
+    background: url('../img/front-photo.jpg') center/cover no-repeat;
     color: #fff;
-    padding: 4.5rem 0;
+    padding: 7rem 0;
     position: relative;
     overflow: hidden;
 }
@@ -214,12 +212,32 @@ main {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.18));
+    background: linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.45));
     pointer-events: none;
 }
 .home-hero .container { position: relative; z-index: 1; }
 .home-hero h1 { line-height: 1.1; }
 .home-hero .lead { max-width: 680px; }
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.55rem 0.85rem;
+    background: rgba(0,0,0,0.28);
+    border-radius: 999px;
+    backdrop-filter: blur(6px);
+}
+.hero-badge-logo {
+    height: 100px;
+    width: 100px;
+    object-fit: contain;
+}
+.hero-badge-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+    color: #fff;
+}
 .pill {
     display: inline-flex;
     align-items: center;
@@ -242,7 +260,7 @@ main {
     min-width: 160px;
     min-height: 110px;
 }
-.stat-number { font-size: 1.4rem; font-weight: 700; color: #fff; }
+.stat-number { font-size: 1.8rem; font-weight: 700; color: #fff; }
 .stat-label { color: rgba(255,255,255,0.82); font-size: 0.9rem; }
 .hero-panel {
     background: #fff;
@@ -398,6 +416,13 @@ main {
 
 .cta-panel {
     backdrop-filter: blur(4px);
+}
+
+/* Gradient-backed section (Why Barangay Konek) */
+.section--gradient {
+    background: radial-gradient(circle at 15% 20%, rgba(11,139,114,0.35), transparent 26%),
+                radial-gradient(circle at 78% 6%, rgba(11,61,145,0.42), transparent 34%),
+                linear-gradient(120deg, #dfe9f8 0%, #d1dff5 48%, #cce8e0 100%);
 }
 
 /* Feature grid */

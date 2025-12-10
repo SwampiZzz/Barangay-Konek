@@ -12,9 +12,7 @@ $dashboardNav = current_user_role() === ROLE_USER
 	<div class="container container-narrow">
 		<div class="row align-items-center g-4">
 			<div class="col-lg-7">
-				<div class="hero-badge">
-					<span class="pill pill-soft">Secure • Transparent • 24/7</span>
-				</div>
+				<img src="<?php echo WEB_ROOT; ?>/public/assets/img/Barangay-Konek-Logo-with-Letter.png" alt="Barangay Konek" class="hero-badge-logo">
 				<h1 class="display-5 fw-bold text-white mt-3">Barangay Konek</h1>
 				<p class="lead text-white-70">One portal for residents, staff, and administrators to manage documents, complaints, and announcements with full accountability.</p>
 				<div class="d-flex flex-wrap align-items-center gap-3 mt-4">
@@ -25,25 +23,6 @@ $dashboardNav = current_user_role() === ROLE_USER
 						<a class="btn btn-lg btn-light" href="index.php?nav=<?php echo $dashboardNav; ?>">Go to dashboard</a>
 						<a class="btn btn-lg btn-outline-light" href="index.php?nav=create-request">Create a request</a>
 					<?php endif; ?>
-				</div>
-				<div class="hero-checks mt-3">
-					<span><i class="fas fa-shield-alt me-1"></i>Data privacy aligned</span>
-					<span><i class="fas fa-check-circle me-1"></i>Audit-ready logs</span>
-					<span><i class="fas fa-users me-1"></i>Role-based control</span>
-				</div>
-				<div class="hero-stats mt-4">
-					<div class="stat-card">
-						<div class="stat-number">4</div>
-						<div class="stat-label">User roles covered</div>
-					</div>
-					<div class="stat-card">
-						<div class="stat-number">24/7</div>
-						<div class="stat-label">Self-service availability</div>
-					</div>
-					<div class="stat-card">
-						<div class="stat-number">100%</div>
-						<div class="stat-label">Trackable requests</div>
-					</div>
 				</div>
 			</div>
 			<div class="col-lg-5">
@@ -135,7 +114,7 @@ $dashboardNav = current_user_role() === ROLE_USER
 	</div>
 </section>
 
-<section class="section">
+<section class="section section--gradient">
 	<div class="container container-narrow">
 		<div class="row mb-4">
 			<div class="col-lg-7">
@@ -169,7 +148,7 @@ $dashboardNav = current_user_role() === ROLE_USER
 	</div>
 </section>
 
-<section class="section section--alt">
+<!-- <section class="section section--alt">
 	<div class="container container-narrow">
 		<div class="row mb-4">
 			<div class="col-lg-7">
@@ -208,7 +187,7 @@ $dashboardNav = current_user_role() === ROLE_USER
 			</div>
 		</div>
 	</div>
-</section>
+</section> -->
 
 <section class="section">
 	<div class="container container-narrow">

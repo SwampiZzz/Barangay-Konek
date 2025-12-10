@@ -87,10 +87,33 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             registerAlert.innerHTML = '';
 
-            const requiredFields = ['first_name', 'last_name', 'username', 'password', 'password_confirm'];
+            const requiredFields = ['first_name', 'last_name', 'username', 'password', 'password_confirm', 'email', 'barangay_id'];
             const missing = requiredFields.filter(name => !(registerForm.querySelector(`[name="${name}"]`).value || '').trim());
             if (missing.length) {
                 showAlert(registerAlert, 'danger', 'Please fill all required fields.');
+                return;
+            }
+
+            // Validate age (must be 18+)
+            const birthdateInput = registerForm.querySelector('[name="birthdate"]').value;
+            if (birthdateInput) {
+                const birthDate = new Date(birthdateInput);
+                const today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                if (age < 18) {
+                    showAlert(registerAlert, 'danger', 'You must be at least 18 years old to register.');
+                    return;
+                }
+            }
+
+            // Validate contact number format (09xx-xxx-xxxx)
+            const contactNumber = (registerForm.querySelector('[name="contact_number"]').value || '').trim();
+            if (contactNumber && !/^09\d{2}-\d{3}-\d{4}$/.test(contactNumber)) {
+                showAlert(registerAlert, 'danger', 'Contact number must follow format: 09XX-XXX-XXXX');
                 return;
             }
 
@@ -193,6 +216,88 @@ document.addEventListener('DOMContentLoaded', function() {
             if (link.getAttribute('href') && link.getAttribute('href').includes('nav=' + currentNav)) {
                 link.classList.add('active');
             }
+        });
+    }
+
+    // Register modal: load provinces on modal show
+    if (registerModalEl) {
+        registerModalEl.addEventListener('show.bs.modal', function() {
+            const provinceSelect = document.getElementById('provinceSelect');
+            if (provinceSelect && provinceSelect.options.length === 1) {
+                // Load provinces
+                fetch('index.php?nav=register-api&action=get_provinces', {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success && data.provinces) {
+                        data.provinces.forEach(p => {
+                            const opt = document.createElement('option');
+                            opt.value = p.id;
+                            opt.textContent = p.name;
+                            provinceSelect.appendChild(opt);
+                        });
+                    }
+                })
+                .catch(err => console.error('Failed to load provinces:', err));
+            }
+        });
+
+        // Province change: load cities
+        document.getElementById('provinceSelect').addEventListener('change', function() {
+            const provinceId = this.value;
+            const citySelect = document.getElementById('citySelect');
+            const barangaySelect = document.getElementById('barangaySelect');
+            
+            citySelect.innerHTML = '<option value="">-- Select City --</option>';
+            barangaySelect.innerHTML = '<option value="">-- Select Barangay --</option>';
+            
+            if (!provinceId) return;
+            
+            fetch(`index.php?nav=register-api&action=get_cities&province_id=${provinceId}`, {
+                method: 'GET',
+                credentials: 'same-origin'
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.cities) {
+                    data.cities.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.id;
+                        opt.textContent = c.name;
+                        citySelect.appendChild(opt);
+                    });
+                }
+            })
+            .catch(err => console.error('Failed to load cities:', err));
+        });
+
+        // City change: load barangays
+        document.getElementById('citySelect').addEventListener('change', function() {
+            const cityId = this.value;
+            const barangaySelect = document.getElementById('barangaySelect');
+            
+            barangaySelect.innerHTML = '<option value="">-- Select Barangay --</option>';
+            
+            if (!cityId) return;
+            
+            fetch(`index.php?nav=register-api&action=get_barangays&city_id=${cityId}`, {
+                method: 'GET',
+                credentials: 'same-origin'
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.barangays) {
+                    data.barangays.forEach(b => {
+                        const opt = document.createElement('option');
+                        opt.value = b.id;
+                        opt.textContent = b.name;
+                        barangaySelect.appendChild(opt);
+                    });
+                }
+            })
+            .catch(err => console.error('Failed to load barangays:', err));
         });
     }
 });
