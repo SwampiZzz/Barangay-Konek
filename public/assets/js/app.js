@@ -194,12 +194,31 @@ document.addEventListener('DOMContentLoaded', function() {
                     const loginAlert = document.getElementById('loginAlert');
                     const showLoginAfterHide = () => {
                         registerModalEl.removeEventListener('hidden.bs.modal', showLoginAfterHide);
-                        // Show success message in login modal
-                        if (loginAlert) {
-                            showAlert(loginAlert, 'success', 'Registration successful! Please log in with your credentials to proceed to verification.');
-                        }
+                        
                         const loginModal = new bootstrap.Modal(loginModalEl);
                         loginModal.show();
+                        
+                        // Show detailed success message in login modal - after modal is shown
+                        setTimeout(() => {
+                            if (loginAlert) {
+                                const successHTML = `
+                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                        <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                                            <i class="fas fa-check-circle" style="color: #28a745; font-size: 1.5rem; flex-shrink: 0; margin-top: 0.2rem;"></i>
+                                            <div style="padding-right: 2rem;">
+                                                <strong style="font-size: 1.1rem; color: #155724;">✓ Registration Successful!</strong>
+                                                <p style="margin: 0.75rem 0 0 0; font-size: 0.95rem; color: #155724;">Your account has been created successfully. You can now log in with your username and password below.</p>
+                                                <p style="margin: 0.75rem 0 0 0; font-size: 0.9rem; color: #155724; border-left: 3px solid #28a745; padding-left: 1rem;">
+                                                    <i class="fas fa-info-circle me-1"></i><strong>Next Steps:</strong> After logging in, your account will need to be verified by the barangay administrator before you can submit requests or complaints.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                                loginAlert.innerHTML = successHTML;
+                            }
+                        }, 100);
                     };
 
                     if (document.activeElement) document.activeElement.blur();

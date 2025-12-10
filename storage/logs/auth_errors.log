@@ -1,0 +1,7 @@
+[10-Dec-2025 18:59:53 Europe/Berlin] Registration error: Duplicate entry '0' for key 'email'
+[10-Dec-2025 19:04:27 Europe/Berlin] Inserting profile: user_id=14, last_name='User', first_name='Third Adams', email='user3@gmail.com', barangay_id=1
+[10-Dec-2025 19:04:27 Europe/Berlin] Profile inserted successfully for user_id=14
+[10-Dec-2025 19:08:48 Europe/Berlin] Inserting profile: user_id=15, last_name='User', first_name='Third Adams', email='user3@gmail.com', barangay_id=1
+[10-Dec-2025 19:08:48 Europe/Berlin] Profile inserted successfully for user_id=15
+[10-Dec-2025 19:10:27 Europe/Berlin] Inserting profile: user_id=16, last_name='User', first_name='Third Adams', email='user3@gmail.com', barangay_id=1
+[10-Dec-2025 19:10:27 Europe/Berlin] Profile inserted successfully for user_id=16

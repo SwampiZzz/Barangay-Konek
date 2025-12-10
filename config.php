@@ -258,6 +258,47 @@ function require_access($barangay_id = null) {
     return true;
 }
 
+// Verification status checking
+function is_user_verified($user_id = null) {
+    global $conn;
+    $user_id = $user_id ?? current_user_id();
+    if ($user_id <= 0) return false;
+    
+    // Only regular users need verification
+    $role = current_user_role();
+    if ($role !== ROLE_USER) {
+        return true; // Staff, admin, and superadmin don't need verification
+    }
+    
+    $stmt = $conn->prepare('
+        SELECT verification_status_id 
+        FROM user_verification 
+        WHERE user_id = ? 
+        LIMIT 1
+    ');
+    if (!$stmt) return false;
+    $stmt->bind_param('i', $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    
+    // Status ID 2 = verified (based on verification_status table)
+    return $row && $row['verification_status_id'] == 2;
+}
+
+function require_verification() {
+    $user_id = current_user_id();
+    if (empty($user_id)) {
+        header('Location: ' . WEB_ROOT . '/index.php');
+        exit;
+    }
+    
+    if (!is_user_verified($user_id)) {
+        redirect_to_dashboard();
+    }
+}
+
 // Redirect user to their appropriate dashboard
 function redirect_to_dashboard() {
     $role = current_user_role();

@@ -20,7 +20,7 @@ if ($nav === 'logout') {
 }
 
 // Map navigation to pages with their required roles
-// Format: 'nav' => ['file' => 'path/to/file.php', 'roles' => [ROLE_*, ...] or null for public]
+// Format: 'nav' => ['file' => 'path/to/file.php', 'roles' => [ROLE_*, ...] or null for public, 'require_verification' => bool]
 $pages = [
     // Public pages
     'login' => ['file' => 'pages/login.php', 'roles' => null],
@@ -32,10 +32,10 @@ $pages = [
     
     // User pages
     'user-dashboard' => ['file' => 'pages/user-dashboard.php', 'roles' => [ROLE_USER]],
-    'create-request' => ['file' => 'pages/create-request.php', 'roles' => [ROLE_USER]],
-    'request-list' => ['file' => 'pages/request-list.php', 'roles' => [ROLE_USER]],
-    'request-ticket' => ['file' => 'pages/request-ticket.php', 'roles' => [ROLE_USER]],
-    'complaint-list' => ['file' => 'pages/complaint-list.php', 'roles' => [ROLE_USER]],
+    'create-request' => ['file' => 'pages/create-request.php', 'roles' => [ROLE_USER], 'require_verification' => true],
+    'request-list' => ['file' => 'pages/request-list.php', 'roles' => [ROLE_USER], 'require_verification' => true],
+    'request-ticket' => ['file' => 'pages/request-ticket.php', 'roles' => [ROLE_USER], 'require_verification' => true],
+    'complaint-list' => ['file' => 'pages/complaint-list.php', 'roles' => [ROLE_USER], 'require_verification' => true],
     'profile' => ['file' => 'pages/profile.php', 'roles' => [ROLE_USER, ROLE_STAFF, ROLE_ADMIN, ROLE_SUPERADMIN]],
     
     // Staff pages
@@ -105,6 +105,13 @@ if ($page_config['roles'] !== null) {
     if (!in_array($user_role, $page_config['roles'], true)) {
         // User doesn't have permission - redirect to their dashboard
         redirect_to_dashboard();
+    }
+    
+    // Check if page requires verification
+    if (!empty($page_config['require_verification']) && $page_config['require_verification']) {
+        if (!is_user_verified()) {
+            redirect_to_dashboard();
+        }
     }
 }
 

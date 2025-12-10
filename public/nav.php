@@ -3,6 +3,13 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 $role = intval($_SESSION['role'] ?? 0);
 $user_id = intval($_SESSION['user_id'] ?? 0);
 
+// Check if user is verified (only matters for regular users)
+$is_verified = true;
+if ($role === ROLE_USER && $user_id > 0) {
+    require_once __DIR__ . '/../config.php';
+    $is_verified = is_user_verified($user_id);
+}
+
 // Get profile picture
 $profilePicDir = __DIR__ . '/../storage/app/private/profile_pics/';
 $profilePicWeb = (defined('WEB_ROOT') ? WEB_ROOT : '') . '/storage/app/private/profile_pics/';
@@ -12,11 +19,11 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
 ?>
 
 <!-- Primary bar: brand + auth/profile -->
-<nav class="navbar navbar-expand-lg navbar-dark" style="background:#0b3d91;">
+<nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 28%, #0b3d91 27%, #0b3d91 100%);">
     <div class="container-fluid">
-        <a class="navbar-brand d-flex align-items-center fw-semibold text-white" href="<?php echo WEB_ROOT; ?>/index.php">
-            <img src="<?php echo WEB_ROOT; ?>/public/assets/img/Barangay-Konek-Logo-Only.png" alt="Barangay Konek" style="height:32px;" class="me-2">
-            <span>Barangay Konek</span>
+        <a class="navbar-brand d-flex align-items-center fw-semibold" href="<?php echo WEB_ROOT; ?>/index.php" style="color: #0b3d91;">
+            <img src="<?php echo WEB_ROOT; ?>/public/assets/img/Barangay-Konek-Logo-Only.png" alt="Barangay Konek" style="height:42px;" class="me-2">
+            <span style="text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Barangay Konek</span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTop">
             <span class="navbar-toggler-icon"></span>
@@ -59,8 +66,12 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
             <ul class="navbar-nav me-auto">
                 <?php if ($role === ROLE_USER): ?>
                     <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=user-dashboard">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=request-list">Requests</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=complaint-list">Complaints</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo !$is_verified ? 'disabled' : ''; ?>" href="<?php echo $is_verified ? WEB_ROOT . '/index.php?nav=request-list' : '#'; ?>" <?php echo !$is_verified ? 'style="cursor: not-allowed; opacity: 0.6;" title="Verify your account to access requests"' : ''; ?>>Requests</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo !$is_verified ? 'disabled' : ''; ?>" href="<?php echo $is_verified ? WEB_ROOT . '/index.php?nav=complaint-list' : '#'; ?>" <?php echo !$is_verified ? 'style="cursor: not-allowed; opacity: 0.6;" title="Verify your account to access complaints"' : ''; ?>>Complaints</a>
+                    </li>
                     <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=announcements">Announcements</a></li>
                 <?php elseif ($role === ROLE_STAFF): ?>
                     <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=staff-dashboard">Dashboard</a></li>
@@ -107,15 +118,16 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
                     <div class="text-end small text-muted">
                         Need an account? <a href="#" data-switch-target="registerModal">Register here</a>
                     </div>
-                    <hr class="my-2">
-                    <div class="text-center small text-muted">
+                </div>
+                <div class="modal-footer">
+                    <div class="small text-muted">
                         <a href="index.php?nav=terms-of-service" target="_blank" class="text-muted text-decoration-none">Terms of Service</a> | 
                         <a href="index.php?nav=privacy-policy" target="_blank" class="text-muted text-decoration-none">Privacy Policy</a>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary-outline" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Login</button>
+                    <div class="ms-auto">
+                        <button type="button" class="btn btn-secondary-outline" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -244,8 +256,14 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
                         </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary-outline" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success">Register</button>
+                    <div class="small text-muted">
+                        <a href="index.php?nav=terms-of-service" target="_blank" class="text-muted text-decoration-none">Terms of Service</a> | 
+                        <a href="index.php?nav=privacy-policy" target="_blank" class="text-muted text-decoration-none">Privacy Policy</a>
+                    </div>
+                    <div class="ms-auto">
+                        <button type="button" class="btn btn-secondary-outline" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success">Register</button>
+                    </div>
                 </div>
             </form>
         </div>
