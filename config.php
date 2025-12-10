@@ -11,14 +11,11 @@ if (session_status() === PHP_SESSION_NONE) {
 // If at web root, dirname may return '/' — keep that as empty string so
 // links like '/public/...' won't incorrectly point outside the project.
 if (!defined('WEB_ROOT')) {
-    $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
+    $scriptName = $_SERVER['SCRIPT_NAME'] ?? '/index.php';
+    $scriptDir = str_replace('\\', '/', dirname($scriptName));
     $scriptDir = rtrim($scriptDir, '/');
-    if ($scriptDir === '') {
-        // Running at web root
-        define('WEB_ROOT', '');
-    } else {
-        define('WEB_ROOT', $scriptDir);
-    }
+    // Only use WEB_ROOT if it's not just '/' (web root case)
+    define('WEB_ROOT', ($scriptDir === '/' || $scriptDir === '') ? '' : $scriptDir);
 }
 
 // Database credentials - adjust for your local XAMPP/MySQL setup
@@ -153,6 +150,19 @@ function require_role(array $allowed) {
         http_response_code(403);
         die('Forbidden: insufficient privileges.');
     }
+}
+
+function get_user_profile($user_id = null) {
+    global $conn;
+    $user_id = $user_id ?? current_user_id();
+    $stmt = $conn->prepare('SELECT p.*, u.username FROM profile p JOIN users u ON p.user_id = u.id WHERE p.user_id = ? LIMIT 1');
+    if (!$stmt) return null;
+    $stmt->bind_param('i', $user_id);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $profile = $res ? $res->fetch_assoc() : null;
+    $stmt->close();
+    return $profile;
 }
 
 // Activity log helper

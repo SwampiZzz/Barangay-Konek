@@ -1,46 +1,88 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) session_start();
+$role = intval($_SESSION['role'] ?? 0);
+$user_id = intval($_SESSION['user_id'] ?? 0);
+
+// Get profile picture
+$profilePicDir = __DIR__ . '/../storage/app/private/profile_pics/';
+$profilePicWeb = (defined('WEB_ROOT') ? WEB_ROOT : '') . '/storage/app/private/profile_pics/';
+$profilePicName = 'user_' . $user_id . '.jpg';
+$profilePicPath = $profilePicDir . $profilePicName;
+$profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName : (defined('WEB_ROOT') ? WEB_ROOT : '') . '/public/assets/img/default-avatar.png';
 ?>
-<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+
+<!-- Primary bar: brand + auth/profile -->
+<nav class="navbar navbar-expand-lg navbar-dark" style="background:#0b3d91;">
     <div class="container-fluid">
-        <a class="navbar-brand fw-bold" href="<?php echo WEB_ROOT; ?>/index.php">
-            <i class="fas fa-map-marked-alt"></i> Barangay Konek
+        <a class="navbar-brand d-flex align-items-center fw-semibold text-white" href="<?php echo WEB_ROOT; ?>/index.php">
+            <img src="<?php echo WEB_ROOT; ?>/public/assets/img/Barangay-Konek-Logo-Only.png" alt="Barangay Konek" style="height:32px;" class="me-2">
+            <span>Barangay Konek</span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTop">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarTop">
-            <ul class="navbar-nav ms-auto">
+            <ul class="navbar-nav ms-auto align-items-lg-center">
                 <?php if (!empty($_SESSION['user_id'])): ?>
-                    <li class="nav-item">
-                        <span class="nav-link">Welcome, <strong><?php echo htmlspecialchars($_SESSION['username'] ?? ''); ?></strong></span>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=profile">
-                            <i class="fas fa-user-circle"></i> Profile
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-white d-flex align-items-center" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="<?php echo $profilePicUrl; ?>" alt="Profile" class="rounded-circle me-2" style="width:32px; height:32px; object-fit:cover; border:2px solid #fff;">
+                            <span><?php echo htmlspecialchars($_SESSION['username'] ?? ''); ?></span>
                         </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=logout">
-                            <i class="fas fa-sign-out-alt"></i> Logout
-                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                            <li><a class="dropdown-item" href="<?php echo WEB_ROOT; ?>/index.php?nav=profile"><i class="fas fa-id-badge me-2"></i>Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="<?php echo WEB_ROOT; ?>/index.php?nav=logout"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        </ul>
                     </li>
                 <?php else: ?>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
-                            <i class="fas fa-sign-in-alt"></i> Login
-                        </a>
+                    <li class="nav-item me-2">
+                        <button class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#loginModal"><i class="fas fa-sign-in-alt me-1"></i> Login</button>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#registerModal">
-                            <i class="fas fa-user-plus"></i> Register
-                        </a>
+                        <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#registerModal"><i class="fas fa-user-plus me-1"></i> Register</button>
                     </li>
                 <?php endif; ?>
             </ul>
         </div>
     </div>
 </nav>
+
+<?php if (!empty($_SESSION['user_id'])): ?>
+<!-- Secondary bar: role-based navigation -->
+<nav class="navbar navbar-expand-lg navbar-light border-bottom" style="background:#f2f5fa;">
+    <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSecondary">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSecondary">
+            <ul class="navbar-nav me-auto">
+                <?php if ($role === ROLE_USER): ?>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=user-dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=request-list">Requests</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=complaint-list">Complaints</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=announcements">Announcements</a></li>
+                <?php elseif ($role === ROLE_STAFF): ?>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=staff-dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-requests">Manage Requests</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-complaints">Manage Complaints</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=announcements">Announcements</a></li>
+                <?php elseif ($role === ROLE_ADMIN): ?>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=admin-dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-requests">Manage Requests</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-complaints">Manage Complaints</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=announcements">Announcements</a></li>
+                <?php elseif ($role === ROLE_SUPERADMIN): ?>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=superadmin-dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=admin-management">Admin Management</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=barangay-overview">Barangay Overview</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo WEB_ROOT; ?>/index.php?nav=activity-logs">Activity Logs</a></li>
+                <?php endif; ?>
+            </ul>
+        </div>
+    </div>
+</nav>
+<?php endif; ?>
 
 <!-- Login Modal -->
 <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">

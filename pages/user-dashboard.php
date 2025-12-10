@@ -7,7 +7,9 @@ require_role([ROLE_USER]);
 
 $pageTitle = 'Dashboard';
 $user_id = current_user_id();
-$profile = get_user_profile($user_id);
+// Get user profile
+$res = db_query('SELECT * FROM profile WHERE user_id = ?', 'i', [$user_id]);
+$profile = $res ? $res->fetch_assoc() : [];
 
 // Get recent requests
 $res = db_query('SELECT r.id, r.request_status_id, rs.name as status_name, dt.name as doc_type FROM request r LEFT JOIN request_status rs ON r.request_status_id = rs.id LEFT JOIN document_type dt ON r.document_type_id = dt.id WHERE r.user_id = ? ORDER BY r.created_at DESC LIMIT 5', 'i', [$user_id]);
