@@ -1,9 +1,9 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-light border-top mt-5 py-4">
-        <div class="container-fluid text-center text-muted small">
-            <p>&copy; 2025 Barangay Konek. All rights reserved.</p>
+    <footer class="bg-light border-top mt-5 py-2">
+        <div class="container-fluid text-center text-muted" style="font-size: 0.75rem;">
+            <p class="mb-0">&copy; 2025 Barangay Konek. All rights reserved.</p>
         </div>
     </footer>
 

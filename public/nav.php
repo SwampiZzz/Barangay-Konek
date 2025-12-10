@@ -104,6 +104,9 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
                         <input type="password" class="form-control" name="password" required>
                     </div>
                     <input type="hidden" name="action" value="login">
+                    <div class="text-end small text-muted">
+                        Need an account? <a href="#" data-switch-target="registerModal">Register here</a>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -182,6 +185,9 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
                     </div>
 
                     <input type="hidden" name="action" value="register">
+                        <div class="text-end small text-muted">
+                            Already have an account? <a href="#" data-switch-target="loginModal">Login here</a>
+                        </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
