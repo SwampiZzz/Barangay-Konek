@@ -330,10 +330,13 @@ require_once __DIR__ . '/../public/header.php';
             <div style="background: linear-gradient(135deg, #fff3cd, #ffeeba); border-left: 5px solid #ffc107; padding: 1.25rem; border-radius: 0.5rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);">
                 <div style="display: flex; align-items: flex-start; gap: 1rem;">
                     <i class="fas fa-info-circle" style="color: #856404; margin-top: 0.2rem; flex-shrink: 0; font-size: 1.25rem;"></i>
-                    <div style="color: #856404;">
+                    <div style="color: #856404; flex: 1;">
                         <strong style="font-weight: 700; font-size: 1rem;">Verification Required</strong>
                         <p style="margin: 0.5rem 0 0 0; font-size: 0.95rem;">Your account is awaiting verification. Status: <strong style="font-weight: 700;"><?php echo e(ucfirst($verification_status)); ?></strong></p>
-                        <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">Complete your verification to unlock requests and complaints.</p>
+                        <p style="margin: 0.5rem 0 0.75rem 0; font-size: 0.9rem;">Complete your verification to unlock requests and complaints.</p>
+                        <a href="index.php?nav=profile#verification" class="btn btn-warning btn-sm" style="background: #ffc107; border-color: #ffc107; color: #856404; font-weight: 600;">
+                            <i class="fas fa-user-check me-1"></i>Go to Profile Verification
+                        </a>
                     </div>
                 </div>
             </div>

@@ -188,4 +188,23 @@ require_once __DIR__ . '/../public/header.php';
         </div>
     </div>
 </div>
+
+<script>
+// Handle tab navigation from URL hash
+document.addEventListener('DOMContentLoaded', function() {
+    const hash = window.location.hash;
+    if (hash) {
+        const tabTrigger = document.querySelector(`button[data-bs-target="${hash}"]`);
+        if (tabTrigger) {
+            const tab = new bootstrap.Tab(tabTrigger);
+            tab.show();
+            // Scroll to the tab content
+            setTimeout(() => {
+                document.querySelector(hash).scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+    }
+});
+</script>
+
 <?php require_once __DIR__ . '/../public/footer.php'; ?>
