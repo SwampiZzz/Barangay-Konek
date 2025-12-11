@@ -1,0 +1,14 @@
+# Ignore sensitive runtime storage
+/storage/app/private/
+/storage/logs/
+
+# Allow placeholders to keep directories in Git
+!storage/app/private/.gitkeep
+!storage/logs/.gitkeep
+
+# Common OS/editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
