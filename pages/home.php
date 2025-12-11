@@ -14,7 +14,7 @@ $dashboardNav = current_user_role() === ROLE_USER
 		<div class="col-lg-7">
 			<img src="<?php echo WEB_ROOT; ?>/public/assets/img/Barangay-Konek-Logo-with-Letter.png" alt="Barangay Konek" class="hero-badge-logo">
 			<h1 class="display-5 fw-bold text-white mt-3" style="text-transform: uppercase; letter-spacing: 1px;">Barangay Konek</h1>
-			<p class="lead text-white-70">One portal for residents, staff, and administrators to manage documents, complaints, and announcements with full accountability.</p>
+			<p class="lead text-white-70">Connecting communities, empowering citizens. Your services, simplified.</p>
 				<div class="d-flex flex-wrap align-items-center gap-3 mt-4">
 					<?php if (!$isLoggedIn): ?>
 						<button class="btn btn-lg btn-light" data-bs-toggle="modal" data-bs-target="#registerModal">Create an account</button>

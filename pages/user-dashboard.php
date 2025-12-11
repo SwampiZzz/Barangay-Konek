@@ -333,7 +333,7 @@ require_once __DIR__ . '/../public/header.php';
                     <div style="color: #856404; flex: 1;">
                         <strong style="font-weight: 700; font-size: 1rem;">Verification Required</strong>
                         <p style="margin: 0.5rem 0 0 0; font-size: 0.95rem;">Your account is awaiting verification. Status: <strong style="font-weight: 700;"><?php echo e(ucfirst($verification_status)); ?></strong></p>
-                        <p style="margin: 0.5rem 0 0.75rem 0; font-size: 0.9rem;">Complete your verification to unlock requests and complaints.</p>
+                        <p style="margin: 0.5rem 0 0.75rem 0; font-size: 0.9rem;">Complete your verification to be able to submit requests and complaints.</p>
                         <a href="index.php?nav=profile#verification" class="btn btn-warning btn-sm" style="background: #ffc107; border-color: #ffc107; color: #856404; font-weight: 600;">
                             <i class="fas fa-user-check me-1"></i>Go to Profile Verification
                         </a>
@@ -423,10 +423,9 @@ require_once __DIR__ . '/../public/header.php';
             </div>
         </div>
 
-        <!-- Main Content Row -->
-        <div class="row g-3 mb-4">
-            <!-- Recent Requests -->
-            <div class="col-lg-8">
+        <!-- Recent Requests Section -->
+        <div class="row mb-4">
+            <div class="col-12">
                 <div class="dashboard-card">
                     <div class="dashboard-card-header" style="border-bottom-color: #1a5490;">
                         <i class="fas fa-file-alt" style="color: #1a5490;"></i>
@@ -455,37 +454,6 @@ require_once __DIR__ . '/../public/header.php';
                     </div>
                     <div style="border-top: 1px solid #e5e7eb; padding: 1rem 1.5rem; background: linear-gradient(135deg, rgba(26, 84, 144, 0.03), transparent);">
                         <a href="index.php?nav=request-list" style="color: #1a5490; text-decoration: none; font-weight: 700; font-size: 0.9rem;"><i class="fas fa-arrow-right me-1"></i>View All Requests</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="col-lg-4">
-                <div class="dashboard-card">
-                    <div class="dashboard-card-header" style="border-bottom-color: #1a5490;">
-                        <i class="fas fa-thunderbolt" style="color: #1a5490;"></i>
-                        <h5>Quick Actions</h5>
-                    </div>
-                    <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.875rem;">
-                        <?php if ($is_verified): ?>
-                            <a href="index.php?nav=create-request" class="action-btn action-btn-primary">
-                                <i class="fas fa-plus me-2"></i>New Document Request
-                            </a>
-                            <a href="index.php?nav=request-list" class="action-btn action-btn-outline">
-                                <i class="fas fa-list me-2"></i>View My Requests
-                            </a>
-                            <a href="index.php?nav=complaint-list" class="action-btn action-btn-danger">
-                                <i class="fas fa-exclamation-circle me-2"></i>View Complaints
-                            </a>
-                        <?php else: ?>
-                            <p style="color: #999; font-size: 0.9rem; margin: 0; text-align: center; padding: 0.5rem;">Complete verification to submit requests or file complaints.</p>
-                            <a href="index.php?nav=request-list" class="action-btn action-btn-outline">
-                                <i class="fas fa-list me-2"></i>View My Requests
-                            </a>
-                        <?php endif; ?>
-                        <a href="index.php?nav=profile" class="action-btn" style="background: white; color: #666; border: 2px solid #d1d5db; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='#f8f9fa'; this.style.borderColor='#9ca3af';" onmouseout="this.style.backgroundColor='white'; this.style.borderColor='#d1d5db';">
-                            <i class="fas fa-user me-2"></i>My Profile
-                        </a>
                     </div>
                 </div>
             </div>

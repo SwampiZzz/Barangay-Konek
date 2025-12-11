@@ -261,7 +261,12 @@ main {
     min-height: 110px;
 }
 .stat-number { font-size: 1.8rem; font-weight: 700; color: #fff; }
-.stat-label { color: rgba(255,255,255,0.82); font-size: 0.9rem; }
+
+.stat-label { 
+    color: rgba(255,255,255,0.82); 
+    font-size: 0.9rem; 
+}
+
 .hero-panel {
     background: #fff;
     border-radius: 14px;
@@ -524,6 +529,11 @@ footer {
 .alert {
     border-radius: 6px;
     border: none;
+}
+
+/* Prevent layout shift when alerts appear */
+.tab-pane .alert {
+    margin-bottom: 1.5rem !important;
 }
 
 @media (max-width: 768px) {

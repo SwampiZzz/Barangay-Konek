@@ -75,6 +75,7 @@ CREATE TABLE profile (
     id int PRIMARY KEY AUTO_INCREMENT, 
     last_name varchar(255), 
     first_name varchar(255), 
+    middle_name varchar(255),
     suffix varchar(50), 
     sex_id int, 
     email varchar(255) UNIQUE, 

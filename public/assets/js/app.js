@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             registerAlert.innerHTML = '';
 
-            const requiredFields = ['first_name', 'last_name', 'sex_id', 'username', 'password', 'password_confirm', 'email', 'barangay_id', 'birthdate'];
+            const requiredFields = ['first_name', 'middle_name', 'last_name', 'sex_id', 'username', 'password', 'password_confirm', 'email', 'barangay_id', 'birthdate'];
             const missing = requiredFields.filter(name => !(registerForm.querySelector(`[name="${name}"]`).value || '').trim());
             if (missing.length) {
                 showAlert(registerAlert, 'danger', 'Please fill all required fields.');

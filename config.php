@@ -53,9 +53,10 @@ function db_query($sql, $types = '', $params = []) {
         error_log("DB execute failed: " . $stmt->error);
         return false;
     }
+    // For SELECT queries, return result set. For UPDATE/INSERT/DELETE, return true on success
     $res = $stmt->get_result();
     $stmt->close();
-    return $res;
+    return $res !== false ? $res : true;
 }
 
 // Lightweight flash messages

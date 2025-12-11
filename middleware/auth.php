@@ -49,6 +49,7 @@ if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME']) ?? '') {
             $password = ($_POST['password'] ?? '');
             $password_confirm = ($_POST['password_confirm'] ?? '');
             $first_name = trim($_POST['first_name'] ?? '');
+            $middle_name = trim($_POST['middle_name'] ?? '');
             $last_name = trim($_POST['last_name'] ?? '');
             $suffix = trim($_POST['suffix'] ?? '') ?: '';  // empty string instead of null
             $sex_id = intval($_POST['sex_id'] ?? 0);  // use 0 instead of null
@@ -124,6 +125,7 @@ if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME']) ?? '') {
             // Build values for insertion
             $last_name_val = !empty($last_name) ? "'" . $conn->real_escape_string($last_name) . "'" : 'NULL';
             $first_name_val = !empty($first_name) ? "'" . $conn->real_escape_string($first_name) . "'" : 'NULL';
+            $middle_name_val = !empty($middle_name) ? "'" . $conn->real_escape_string($middle_name) . "'" : 'NULL';
             $suffix_val = !empty($suffix) ? "'" . $conn->real_escape_string($suffix) . "'" : 'NULL';
             $sex_id_val = ($sex_id && $sex_id > 0) ? intval($sex_id) : 'NULL';
             $email_val = !empty($email) ? "'" . $conn->real_escape_string($email) . "'" : 'NULL';
@@ -134,7 +136,7 @@ if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME']) ?? '') {
             error_log("Inserting profile: user_id=$user_id, last_name=$last_name_val, first_name=$first_name_val, email=$email_val, barangay_id=$barangay_id_val");
             
             // Use direct SQL with escaped values
-            $sql = "INSERT INTO profile (user_id, last_name, first_name, suffix, sex_id, email, contact_number, birthdate, barangay_id) VALUES ($user_id, $last_name_val, $first_name_val, $suffix_val, $sex_id_val, $email_val, $contact_number_val, $birthdate_val, $barangay_id_val)";
+            $sql = "INSERT INTO profile (user_id, last_name, first_name, middle_name, suffix, sex_id, email, contact_number, birthdate, barangay_id) VALUES ($user_id, $last_name_val, $first_name_val, $middle_name_val, $suffix_val, $sex_id_val, $email_val, $contact_number_val, $birthdate_val, $barangay_id_val)";
             
             if (!$conn->query($sql)) {
                 error_log('Profile insert error: ' . $conn->error);

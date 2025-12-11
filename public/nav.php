@@ -19,7 +19,7 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
 ?>
 
 <!-- Primary bar: brand + auth/profile -->
-<nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 40%, #0b3d91 27%, #0b3d91 100%);">
+<nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 45%, #0b3d91 27%, #0b3d91 100%);">
     <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center fw-semibold" href="<?php echo WEB_ROOT; ?>/index.php" style="color: #0b3d91;">
             <img src="<?php echo WEB_ROOT; ?>/public/assets/img/Barangay-Konek-Logo-Only.png" alt="Barangay Konek" style="height:42px;" class="me-2">
@@ -44,7 +44,7 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
                     </li>
                 <?php else: ?>
                     <li class="nav-item me-2">
-                        <button class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#loginModal"><i class="fas fa-sign-in-alt me-1"></i> Login</button>
+                        <button class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#loginModal"><i class="fas fa-sign-in-alt me-1"></i> Sign in</button>
                     </li>
                     <li class="nav-item">
                         <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#registerModal"><i class="fas fa-user-plus me-1"></i> Register</button>
@@ -148,20 +148,24 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
                     
                     <h6 class="mb-3">Personal Information</h6>
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">First Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="first_name" required>
+                            <input type="text" class="form-control" name="first_name" placeholder="Juan" required>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Middle Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="middle_name" placeholder="Cruz" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">Last Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="last_name" required>
+                            <input type="text" class="form-control" name="last_name" placeholder="Dela Cruz" required>
                         </div>
                     </div>
                     
                     <div class="row">
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Suffix</label>
-                            <input type="text" class="form-control" name="suffix" placeholder="Jr., Sr., etc.">
+                            <input type="text" class="form-control" name="suffix" placeholder="Jr., Sr., III">
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Sex <span class="text-danger">*</span></label>
