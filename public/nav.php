@@ -81,7 +81,7 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
                 <?php elseif ($role === ROLE_ADMIN): ?>
                     <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=admin-dashboard">Dashboard</a></li>
                     <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-users">Manage Users</a></li>
-                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=verification-management">Verification Management</a></li>
+                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-verifications">Manage Verifications</a></li>
                     <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-requests">Manage Requests</a></li>
                     <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-complaints">Manage Complaints</a></li>
                     <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=announcements">Announcements</a></li>

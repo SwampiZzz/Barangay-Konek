@@ -9,6 +9,9 @@ $user_id = current_user_id();
 // Filters
 $q = trim($_GET['q'] ?? '');
 $filter = $_GET['filter'] ?? 'all'; // all, open, in_progress, resolved, closed
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$per_page = 10;
+$offset = ($page - 1) * $per_page;
 
 // Build query
 $where = ' WHERE c.deleted_at IS NULL';
@@ -22,16 +25,49 @@ if (in_array($filter, ['open','in_progress','resolved','closed'], true)) {
     $where .= ' AND c.complaint_status_id = ' . $map[$filter];
 }
 
+// Count total for pagination
+$count_sql = 'SELECT COUNT(*) as total FROM complaint c WHERE c.deleted_at IS NULL';
+if ($q !== '') {
+    $safe = addslashes($q);
+    $safe = str_replace(['%','_'], ['\\%','\\_'], $safe);
+    $count_sql .= " AND (c.title LIKE '%$safe%' OR u.username LIKE '%$safe%' OR c.description LIKE '%$safe%')";
+}
+if (in_array($filter, ['open','in_progress','resolved','closed'], true)) {
+    $map = ['open'=>1,'in_progress'=>2,'resolved'=>3,'closed'=>4];
+    $count_sql .= ' AND c.complaint_status_id = ' . $map[$filter];
+}
+$count_result = db_query($count_sql);
+$total_complaints = $count_result ? $count_result->fetch_assoc()['total'] : 0;
+$total_pages = ceil($total_complaints / $per_page);
+
 $sql = 'SELECT c.*, cs.name as status_name, u.username FROM complaint c '
      . 'LEFT JOIN complaint_status cs ON c.complaint_status_id = cs.id '
      . 'LEFT JOIN users u ON c.user_id = u.id '
-     . $where . ' ORDER BY c.created_at DESC';
+     . $where . ' ORDER BY c.created_at DESC'
+     . " LIMIT $per_page OFFSET $offset";
 
 $complaints = [];
 $res = db_query($sql);
 if ($res) {
     while ($row = $res->fetch_assoc()) $complaints[] = $row;
 }
+
+// Status counts for pills
+$count_query = "SELECT 
+    SUM(CASE WHEN complaint_status_id = 1 THEN 1 ELSE 0 END) AS open_count,
+    SUM(CASE WHEN complaint_status_id = 2 THEN 1 ELSE 0 END) AS in_progress_count,
+    SUM(CASE WHEN complaint_status_id = 3 THEN 1 ELSE 0 END) AS resolved_count,
+    SUM(CASE WHEN complaint_status_id = 4 THEN 1 ELSE 0 END) AS closed_count,
+    COUNT(*) AS total_count
+    FROM complaint WHERE deleted_at IS NULL";
+$count_res = db_query($count_query);
+$counts = $count_res ? $count_res->fetch_assoc() : [
+    'open_count' => 0,
+    'in_progress_count' => 0,
+    'resolved_count' => 0,
+    'closed_count' => 0,
+    'total_count' => 0,
+];
 
 require_once __DIR__ . '/../public/header.php';
 ?>
@@ -56,11 +92,11 @@ require_once __DIR__ . '/../public/header.php';
         <div class="card-header bg-light">
             <?php $base = WEB_ROOT . '/index.php?nav=manage-complaints&q=' . urlencode($q); ?>
             <ul class="nav nav-pills card-header-pills mb-0">
-                <li class="nav-item"><a class="nav-link <?php echo $filter==='all'?'active':''; ?>" href="<?php echo $base; ?>&filter=all">All</a></li>
-                <li class="nav-item"><a class="nav-link <?php echo $filter==='open'?'active':''; ?>" href="<?php echo $base; ?>&filter=open">Open</a></li>
-                <li class="nav-item"><a class="nav-link <?php echo $filter==='in_progress'?'active':''; ?>" href="<?php echo $base; ?>&filter=in_progress">In Progress</a></li>
-                <li class="nav-item"><a class="nav-link <?php echo $filter==='resolved'?'active':''; ?>" href="<?php echo $base; ?>&filter=resolved">Resolved</a></li>
-                <li class="nav-item"><a class="nav-link <?php echo $filter==='closed'?'active':''; ?>" href="<?php echo $base; ?>&filter=closed">Closed</a></li>
+                <li class="nav-item"><a class="nav-link <?php echo $filter==='all'?'active':''; ?>" href="<?php echo $base; ?>&filter=all">All <span class="badge <?php echo $filter==='all'?'bg-light text-dark':'bg-secondary'; ?> ms-1"><?php echo $counts['total_count'] ?? 0; ?></span></a></li>
+                <li class="nav-item"><a class="nav-link <?php echo $filter==='open'?'active':''; ?>" href="<?php echo $base; ?>&filter=open">Open <span class="badge <?php echo $filter==='open'?'bg-light text-dark':'bg-warning text-dark'; ?> ms-1"><?php echo $counts['open_count'] ?? 0; ?></span></a></li>
+                <li class="nav-item"><a class="nav-link <?php echo $filter==='in_progress'?'active':''; ?>" href="<?php echo $base; ?>&filter=in_progress">In Progress <span class="badge <?php echo $filter==='in_progress'?'bg-light text-dark':'bg-info'; ?> ms-1"><?php echo $counts['in_progress_count'] ?? 0; ?></span></a></li>
+                <li class="nav-item"><a class="nav-link <?php echo $filter==='resolved'?'active':''; ?>" href="<?php echo $base; ?>&filter=resolved">Resolved <span class="badge <?php echo $filter==='resolved'?'bg-light text-dark':'bg-success'; ?> ms-1"><?php echo $counts['resolved_count'] ?? 0; ?></span></a></li>
+                <li class="nav-item"><a class="nav-link <?php echo $filter==='closed'?'active':''; ?>" href="<?php echo $base; ?>&filter=closed">Closed <span class="badge <?php echo $filter==='closed'?'bg-light text-dark':'bg-secondary'; ?> ms-1"><?php echo $counts['closed_count'] ?? 0; ?></span></a></li>
             </ul>
         </div>
         <div class="card-body p-0">
@@ -116,6 +152,61 @@ require_once __DIR__ . '/../public/header.php';
                 </div>
             <?php endif; ?>
         </div>
+        
+        <!-- Pagination -->
+        <?php if ($total_pages > 1): ?>
+            <div class="card-footer bg-light">
+                <nav aria-label="Complaints pagination">
+                    <ul class="pagination pagination-sm mb-0 justify-content-center">
+                        <?php 
+                        $base_url = WEB_ROOT . '/index.php?nav=manage-complaints&filter=' . urlencode($filter) . '&q=' . urlencode($q);
+                        
+                        if ($page > 1): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $page - 1; ?>">Previous</a>
+                            </li>
+                        <?php else: ?>
+                            <li class="page-item disabled">
+                                <span class="page-link">Previous</span>
+                            </li>
+                        <?php endif;
+                        
+                        $start_page = max(1, $page - 2);
+                        $end_page = min($total_pages, $page + 2);
+                        
+                        if ($start_page > 1): ?>
+                            <li class="page-item"><a class="page-link" href="<?php echo $base_url; ?>&page=1">1</a></li>
+                            <?php if ($start_page > 2): ?>
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            <?php endif;
+                        endif;
+                        
+                        for ($i = $start_page; $i <= $end_page; $i++): ?>
+                            <li class="page-item <?php echo $i === $page ? 'active' : ''; ?>">
+                                <a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                            </li>
+                        <?php endfor;
+                        
+                        if ($end_page < $total_pages): 
+                            if ($end_page < $total_pages - 1): ?>
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            <?php endif; ?>
+                            <li class="page-item"><a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $total_pages; ?>"><?php echo $total_pages; ?></a></li>
+                        <?php endif;
+                        
+                        if ($page < $total_pages): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $page + 1; ?>">Next</a>
+                            </li>
+                        <?php else: ?>
+                            <li class="page-item disabled">
+                                <span class="page-link">Next</span>
+                            </li>
+                        <?php endif; ?>
+                    </ul>
+                </nav>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 

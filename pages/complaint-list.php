@@ -6,9 +6,19 @@ require_role([ROLE_USER]);
 $pageTitle = 'My Complaints';
 $user_id = current_user_id();
 
+// Pagination
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$per_page = 10;
+$offset = ($page - 1) * $per_page;
+
+// Count total
+$count_res = db_query('SELECT COUNT(*) as total FROM complaint WHERE user_id = ? AND deleted_at IS NULL', 'i', [$user_id]);
+$total_complaints = $count_res ? $count_res->fetch_assoc()['total'] : 0;
+$total_pages = ceil($total_complaints / $per_page);
+
 // Get user's complaints
 $complaints = [];
-$res = db_query('SELECT c.*, cs.name as status_name FROM complaint c LEFT JOIN complaint_status cs ON c.complaint_status_id = cs.id WHERE c.user_id = ? AND c.deleted_at IS NULL ORDER BY c.created_at DESC', 'i', [$user_id]);
+$res = db_query('SELECT c.*, cs.name as status_name FROM complaint c LEFT JOIN complaint_status cs ON c.complaint_status_id = cs.id WHERE c.user_id = ? AND c.deleted_at IS NULL ORDER BY c.created_at DESC LIMIT ' . $per_page . ' OFFSET ' . $offset, 'i', [$user_id]);
 if ($res) {
     while ($row = $res->fetch_assoc()) {
         $complaints[] = $row;
@@ -61,6 +71,61 @@ require_once __DIR__ . '/../public/header.php';
                             <?php endforeach; ?>
                         </tbody>
                     </table>
+                    
+                    <!-- Pagination -->
+                    <?php if ($total_pages > 1): ?>
+                        <div class="mt-3">
+                            <nav aria-label="Complaints pagination">
+                                <ul class="pagination pagination-sm justify-content-center">
+                                    <?php 
+                                    $base_url = WEB_ROOT . '/index.php?nav=complaint-list';
+                                    
+                                    if ($page > 1): ?>
+                                        <li class="page-item">
+                                            <a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $page - 1; ?>">Previous</a>
+                                        </li>
+                                    <?php else: ?>
+                                        <li class="page-item disabled">
+                                            <span class="page-link">Previous</span>
+                                        </li>
+                                    <?php endif;
+                                    
+                                    $start_page = max(1, $page - 2);
+                                    $end_page = min($total_pages, $page + 2);
+                                    
+                                    if ($start_page > 1): ?>
+                                        <li class="page-item"><a class="page-link" href="<?php echo $base_url; ?>&page=1">1</a></li>
+                                        <?php if ($start_page > 2): ?>
+                                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                                        <?php endif;
+                                    endif;
+                                    
+                                    for ($i = $start_page; $i <= $end_page; $i++): ?>
+                                        <li class="page-item <?php echo $i === $page ? 'active' : ''; ?>">
+                                            <a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                                        </li>
+                                    <?php endfor;
+                                    
+                                    if ($end_page < $total_pages): 
+                                        if ($end_page < $total_pages - 1): ?>
+                                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                                        <?php endif; ?>
+                                        <li class="page-item"><a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $total_pages; ?>"><?php echo $total_pages; ?></a></li>
+                                    <?php endif;
+                                    
+                                    if ($page < $total_pages): ?>
+                                        <li class="page-item">
+                                            <a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $page + 1; ?>">Next</a>
+                                        </li>
+                                    <?php else: ?>
+                                        <li class="page-item disabled">
+                                            <span class="page-link">Next</span>
+                                        </li>
+                                    <?php endif; ?>
+                                </ul>
+                            </nav>
+                        </div>
+                    <?php endif; ?>
                 </div>
             <?php else: ?>
                 <p class="text-muted text-center py-4">No complaints yet. Submit one using the button above.</p>

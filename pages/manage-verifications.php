@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../config.php';
 require_login();
-$pageTitle = 'Verification Management';
+$pageTitle = 'Manage Verifications';
 
 $user_id = current_user_id();
 
@@ -38,8 +38,12 @@ if (isset($_SESSION['alert_type']) && isset($_SESSION['alert_message'])) {
 }
 
 // Get filter parameter
-$filter = $_GET['filter'] ?? 'pending'; // pending, verified, rejected, all
+$filter = $_GET['filter'] ?? 'all'; // pending, verified, rejected, all
 $q = trim($_GET['q'] ?? '');
+$auto_review_modal = isset($_GET['auto_review_modal']) ? intval($_GET['auto_review_modal']) : 0;
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$per_page = 10;
+$offset = ($page - 1) * $per_page;
 $status_map = ['pending' => 1, 'verified' => 2, 'rejected' => 3];
 
 // Handle Approve/Reject Verification
@@ -86,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         }
     }
     
-    header('Location: ' . WEB_ROOT . '/index.php?nav=verification-management&filter=' . $filter);
+    header('Location: ' . WEB_ROOT . '/index.php?nav=manage-verifications&filter=' . $filter);
     exit;
 }
 
@@ -104,6 +108,15 @@ if ($q !== '') {
             . " OR u.username LIKE '%$safe%'"
             . " OR p.email LIKE '%$safe%')";
 }
+
+// Count total for pagination
+$count_query = "SELECT COUNT(*) as total
+FROM user_verification uv
+LEFT JOIN profile p ON uv.user_id = p.user_id
+$where";
+$count_res = db_query($count_query);
+$total_verifications = $count_res ? $count_res->fetch_assoc()['total'] : 0;
+$total_pages = ceil($total_verifications / $per_page);
 
 // Get all verifications with user info
 $query = "SELECT 
@@ -123,15 +136,20 @@ $query = "SELECT
     p.contact_number,
     p.birthdate,
     b.name as barangay_name,
-    admin.username as verified_by_admin
+    admin.username as verified_by_admin,
+    ap.first_name as admin_first_name,
+    ap.last_name as admin_last_name,
+    ap.email as admin_email
 FROM user_verification uv
 LEFT JOIN verification_status vs ON uv.verification_status_id = vs.id
 LEFT JOIN users u ON uv.user_id = u.id
 LEFT JOIN profile p ON uv.user_id = p.user_id
 LEFT JOIN barangay b ON p.barangay_id = b.id
 LEFT JOIN users admin ON uv.verified_by = admin.id
+LEFT JOIN profile ap ON admin.id = ap.user_id
 $where
-ORDER BY uv.submitted_at DESC";
+ORDER BY uv.submitted_at DESC
+LIMIT $per_page OFFSET $offset";
 
 $result = db_query($query);
 $verifications = [];
@@ -140,6 +158,7 @@ if ($result) {
         $verifications[] = $row;
     }
 }
+$showing_verifications = count($verifications);
 
 // Count by status for tabs
 $count_query = "SELECT 
@@ -157,15 +176,111 @@ $counts = $count_result ? $count_result->fetch_assoc() : ['pending_count' => 0, 
 require_once __DIR__ . '/../public/header.php';
 ?>
 
+<style>
+.lightbox {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    padding-top: 50px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.95);
+}
+
+.lightbox-content {
+    margin: 0;
+    display: block;
+    width: 100%;
+    height: 100vh;
+    object-fit: contain;
+    animation: zoomIn 0.3s ease-in-out;
+}
+
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.lightbox-caption {
+    margin: auto;
+    display: block;
+    width: 100%;
+    text-align: center;
+    color: #ccc;
+    padding: 10px 0;
+    height: 50px;
+    font-size: 0.95rem;
+}
+
+.lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    line-height: 1;
+}
+
+.lightbox-close:hover {
+    color: #fff;
+}
+
+.lightbox-controls {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 2001;
+}
+
+.lightbox-btn {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #f1f1f1;
+    border: 1px solid #f1f1f1;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s;
+}
+
+.lightbox-btn:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
+.document-preview-image {
+    cursor: zoom-in;
+    transition: transform 0.2s;
+}
+
+.document-preview-image:hover {
+    transform: scale(1.02);
+}
+</style>
+
 <div class="container my-5">
     <div class="row mb-4">
         <div class="col-md-8">
-            <h2 class="mb-2"><i class="fas fa-certificate me-2"></i>Verification Management</h2>
+            <h2 class="mb-2"><i class="fas fa-certificate me-2"></i>Manage Verifications</h2>
             <p class="text-muted mb-0">Review and approve/reject user verification documents for <strong><?php echo htmlspecialchars($barangay_name); ?></strong></p>
         </div>
         <div class="col-md-4">
             <form class="input-group" method="get" action="<?php echo WEB_ROOT; ?>/index.php">
-                <input type="hidden" name="nav" value="verification-management">
+                <input type="hidden" name="nav" value="manage-verifications">
                 <input type="hidden" name="filter" value="<?php echo htmlspecialchars($filter); ?>">
                 <input type="text" class="form-control" name="q" value="<?php echo htmlspecialchars($q); ?>" placeholder="Search name, @username, or email...">
                 <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
@@ -190,26 +305,26 @@ require_once __DIR__ . '/../public/header.php';
         <div class="card-header bg-light">
             <ul class="nav nav-pills card-header-pills mb-0" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <a class="nav-link <?php echo ($filter === 'pending') ? 'active' : ''; ?>" href="<?php echo WEB_ROOT; ?>/index.php?nav=verification-management&filter=pending">
-                        <i class="fas fa-hourglass-half me-1"></i>Pending
+                    <a class="nav-link <?php echo ($filter === 'pending') ? 'active' : ''; ?>" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-verifications&filter=pending">
+                        Pending
                         <span class="badge <?php echo ($filter === 'pending') ? 'bg-light text-dark' : 'bg-warning text-dark'; ?> ms-2"><?php echo $counts['pending_count'] ?? 0; ?></span>
                     </a>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <a class="nav-link <?php echo ($filter === 'verified') ? 'active' : ''; ?>" href="<?php echo WEB_ROOT; ?>/index.php?nav=verification-management&filter=verified">
-                        <i class="fas fa-check-circle me-1"></i>Verified
+                    <a class="nav-link <?php echo ($filter === 'verified') ? 'active' : ''; ?>" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-verifications&filter=verified">
+                        Verified
                         <span class="badge <?php echo ($filter === 'verified') ? 'bg-light text-dark' : 'bg-success'; ?> ms-2"><?php echo $counts['verified_count'] ?? 0; ?></span>
                     </a>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <a class="nav-link <?php echo ($filter === 'rejected') ? 'active' : ''; ?>" href="<?php echo WEB_ROOT; ?>/index.php?nav=verification-management&filter=rejected">
-                        <i class="fas fa-times-circle me-1"></i>Rejected
+                    <a class="nav-link <?php echo ($filter === 'rejected') ? 'active' : ''; ?>" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-verifications&filter=rejected">
+                        Rejected
                         <span class="badge <?php echo ($filter === 'rejected') ? 'bg-light text-dark' : 'bg-danger'; ?> ms-2"><?php echo $counts['rejected_count'] ?? 0; ?></span>
                     </a>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <a class="nav-link <?php echo ($filter === 'all') ? 'active' : ''; ?>" href="<?php echo WEB_ROOT; ?>/index.php?nav=verification-management&filter=all">
-                        <i class="fas fa-list me-1"></i>All
+                    <a class="nav-link <?php echo ($filter === 'all') ? 'active' : ''; ?>" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-verifications&filter=all">
+                        All
                         <span class="badge <?php echo ($filter === 'all') ? 'bg-light text-dark' : 'bg-secondary'; ?> ms-2"><?php echo $counts['total_count'] ?? 0; ?></span>
                     </a>
                 </li>
@@ -283,6 +398,64 @@ require_once __DIR__ . '/../public/header.php';
                 </div>
             <?php endif; ?>
         </div>
+        
+        <!-- Pagination -->
+        <?php if ($total_pages > 1): ?>
+            <div class="card-footer bg-light">
+                <nav aria-label="Verification pagination">
+                    <ul class="pagination pagination-sm mb-0 justify-content-center">
+                        <?php 
+                        $base_url = WEB_ROOT . '/index.php?nav=manage-verifications&filter=' . urlencode($filter) . '&q=' . urlencode($q);
+                        
+                        // Previous button
+                        if ($page > 1): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $page - 1; ?>">Previous</a>
+                            </li>
+                        <?php else: ?>
+                            <li class="page-item disabled">
+                                <span class="page-link">Previous</span>
+                            </li>
+                        <?php endif;
+                        
+                        // Page numbers
+                        $start_page = max(1, $page - 2);
+                        $end_page = min($total_pages, $page + 2);
+                        
+                        if ($start_page > 1): ?>
+                            <li class="page-item"><a class="page-link" href="<?php echo $base_url; ?>&page=1">1</a></li>
+                            <?php if ($start_page > 2): ?>
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            <?php endif;
+                        endif;
+                        
+                        for ($i = $start_page; $i <= $end_page; $i++): ?>
+                            <li class="page-item <?php echo $i === $page ? 'active' : ''; ?>">
+                                <a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                            </li>
+                        <?php endfor;
+                        
+                        if ($end_page < $total_pages): 
+                            if ($end_page < $total_pages - 1): ?>
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            <?php endif; ?>
+                            <li class="page-item"><a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $total_pages; ?>"><?php echo $total_pages; ?></a></li>
+                        <?php endif;
+                        
+                        // Next button
+                        if ($page < $total_pages): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $page + 1; ?>">Next</a>
+                            </li>
+                        <?php else: ?>
+                            <li class="page-item disabled">
+                                <span class="page-link">Next</span>
+                            </li>
+                        <?php endif; ?>
+                    </ul>
+                </nav>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -299,17 +472,23 @@ require_once __DIR__ . '/../public/header.php';
                         <h5 class="modal-title mb-0">Verification Ticket <span class="text-muted">#<span id="modalVerificationId"></span></span></h5>
                         <small class="text-muted">Review the submission details and take action</small>
                     </div>
-                    <button type="button" class="btn btn-light btn-sm ms-3" data-bs-dismiss="modal">
-                        Close
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
             </div>
             <div class="modal-body pt-3">
+                <!-- Document Preview - Full Width Top -->
+                <div class="card border-0 shadow-sm mb-4" id="modalPreviewCard">
+                    <div class="card-header bg-light py-2">
+                        <small class="text-muted"><i class="fas fa-file me-1"></i>Verification Document</small>
+                    </div>
+                    <div class="card-body p-0 text-center" id="modalDocumentPreview"></div>
+                </div>
+
+                <!-- User Info & Details -->
                 <div class="row g-4">
-                    <!-- Left Column - User Info & Document -->
-                    <div class="col-lg-7">
-                        <!-- User Information Card -->
-                        <div class="card border-0 shadow-sm mb-3">
+                    <!-- User Information Card -->
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center mb-3">
                                     <img id="modalAvatarImg" src="#" alt="Profile" class="rounded-circle me-3" style="width:60px;height:60px;object-fit:cover;display:none;" onerror="this.style.display='none'; document.getElementById('modalAvatar').style.display='flex';">
@@ -339,13 +518,16 @@ require_once __DIR__ . '/../public/header.php';
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Submission Details Card -->
-                        <div class="card border-0 shadow-sm mb-3">
+                    <!-- Submission Details Card -->
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
                             <div class="card-body">
+                                <h6 class="mb-3"><i class="fas fa-history me-2 text-info"></i>Submission Details</h6>
                                 <div class="row g-3">
-                                    <div class="col-md-12">
-                                        <small class="text-muted d-block mb-1">Document File</small>
+                                    <div class="col-md-6">
+                                        <small class="text-muted d-block mb-1">File Name</small>
                                         <div id="modalFilename" class="fw-semibold"></div>
                                     </div>
                                     <div class="col-md-6">
@@ -353,40 +535,35 @@ require_once __DIR__ . '/../public/header.php';
                                         <div id="modalSubmitted" class="fw-semibold"></div>
                                     </div>
                                     <div class="col-md-6">
-                                        <small class="text-muted d-block mb-1">Status</small>
+                                        <small class="text-muted d-block mb-1">Current Status</small>
                                         <div id="modalStatus"></div>
                                     </div>
-                                    <div class="col-md-12" id="modalVerifiedSection" style="display: none;">
-                                        <div class="border-top my-2"></div>
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <small class="text-muted d-block mb-1">Reviewed By</small>
-                                                <div id="modalReviewedBy" class="fw-semibold"></div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <small class="text-muted d-block mb-1">Review Date</small>
-                                                <div id="modalReviewDate" class="fw-semibold"></div>
-                                            </div>
-                                        </div>
+                                    <div id="modalVerifiedSection" style="display: none;" class="col-md-6">
+                                        <small class="text-muted d-block mb-1">Review Date</small>
+                                        <div id="modalReviewDate" class="fw-semibold"></div>
                                     </div>
-                                    <div class="col-md-12" id="modalRemarksSection" style="display: none;">
-                                        <div class="border-top my-2"></div>
+                                    <div id="modalReviewedByRow" style="display: none;" class="col-12">
+                                        <small class="text-muted d-block mb-1">Reviewed By</small>
+                                        <div id="modalReviewedBy" class="fw-semibold"></div>
+                                    </div>
+                                    <div id="modalRemarksSection" style="display: none;" class="col-12">
                                         <small class="text-muted d-block mb-2">Admin Remarks</small>
-                                        <div class="alert alert-danger mb-0" id="modalRemarks"></div>
+                                        <div class="alert alert-danger mb-0 py-2" id="modalRemarks"></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Right Column - Document Preview & Actions -->
-                    <div class="col-lg-5">
-                        <!-- Document Preview -->
-                        <div class="card border-0 shadow-sm mb-3" id="modalPreviewCard">
-                            <div class="card-body p-0 text-center" id="modalDocumentPreview"></div>
-                        </div>
+                    <!-- View User Button -->
+                    <div class="col-12">
+                        <button type="button" class="btn btn-outline-primary w-100" id="viewUserBtn" onclick="redirectToUserModal()">
+                            <i class="fas fa-arrow-left me-1"></i> View User in Manage Users
+                        </button>
+                    </div>
 
-                        <!-- Action Form for All Verifications -->
+                    <!-- Action Form -->
+                    <div class="col-12">
                         <div class="card border-0 shadow-sm" id="modalActionCard" style="display: none;">
                             <div class="card-body">
                                 <h6 class="mb-3"><i class="fas fa-gavel me-2"></i>Review Decision</h6>
@@ -395,6 +572,7 @@ require_once __DIR__ . '/../public/header.php';
                                 </div>
                                 <form method="post" id="reviewForm" novalidate>
                                     <input type="hidden" name="verification_id" id="formVerificationId">
+                                    <input type="hidden" id="formUserId">
                                     
                                     <div class="mb-3">
                                         <label class="form-label">Remarks</label>
@@ -421,6 +599,29 @@ require_once __DIR__ . '/../public/header.php';
 </div>
 
 <script>
+// Auto-load modal if requested from manage-users
+const autoReviewId = <?php echo $auto_review_modal; ?>;
+if (autoReviewId > 0) {
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            // Find and load the verification data
+            const allVerifications = <?php echo json_encode($verifications); ?>;
+            const verification = allVerifications.find(v => v.verification_id == autoReviewId);
+            if (verification && typeof bootstrap !== 'undefined') {
+                const modalElement = document.getElementById('reviewModal');
+                if (modalElement) {
+                    loadVerificationData(verification);
+                    const reviewModal = new bootstrap.Modal(modalElement, {
+                        backdrop: 'static',
+                        keyboard: true
+                    });
+                    reviewModal.show();
+                }
+            }
+        }, 300);
+    });
+}
+
 function loadVerificationData(data) {
     // Basic Info
     document.getElementById('modalVerificationId').textContent = data.verification_id;
@@ -461,10 +662,17 @@ function loadVerificationData(data) {
     // Show/Hide Verified Section
     if (data.verification_status_id != 1) {
         document.getElementById('modalVerifiedSection').style.display = 'block';
-        document.getElementById('modalReviewedBy').textContent = data.verified_by_admin || 'System';
+        document.getElementById('modalReviewedByRow').style.display = 'block';
+        
+        // Display reviewer's fullname and email (hide username for security)
+        const reviewerName = (data.admin_first_name || '') + ' ' + (data.admin_last_name || '');
+        const reviewerEmail = data.admin_email || 'N/A';
+        document.getElementById('modalReviewedBy').innerHTML = `<div>${reviewerName.trim() || 'System'}</div><small class="text-muted">${reviewerEmail}</small>`;
+        
         document.getElementById('modalReviewDate').textContent = data.verified_at ? new Date(data.verified_at).toLocaleString() : 'N/A';
     } else {
         document.getElementById('modalVerifiedSection').style.display = 'none';
+        document.getElementById('modalReviewedByRow').style.display = 'none';
     }
     
     // Show/Hide Remarks Section
@@ -480,7 +688,8 @@ function loadVerificationData(data) {
     const previewEl = document.getElementById('modalDocumentPreview');
     
     if (['jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
-        previewEl.innerHTML = `<img src="<?php echo WEB_ROOT; ?>/storage/app/private/requests/${data.filename}" class="img-fluid w-100" style="max-height: 600px; object-fit: contain;">`;
+        const imgUrl = `<?php echo WEB_ROOT; ?>/storage/app/private/requests/${data.filename}`;
+        previewEl.innerHTML = `<img src="${imgUrl}" class="img-fluid w-100 document-preview-image" style="max-height: 600px; object-fit: contain; cursor: zoom-in;" onclick="openLightbox('${imgUrl}', '${data.filename}')"><div class="py-2"><small class="text-muted"><i class="fas fa-search-plus me-1"></i>Click image to zoom</small></div>`;
     } else {
         const fileUrl = `<?php echo WEB_ROOT; ?>/storage/app/private/requests/${data.filename}`;
         previewEl.innerHTML = `<div class="py-5">
@@ -497,6 +706,8 @@ function loadVerificationData(data) {
     // Show Action Form for all statuses (allow status changes)
     document.getElementById('modalActionCard').style.display = 'block';
     document.getElementById('formVerificationId').value = data.verification_id;
+    document.getElementById('formUserId').value = data.user_id;
+    document.getElementById('reviewForm').dataset.userId = data.user_id;
     
     // Show notice if already processed
     const statusNotice = document.getElementById('statusChangeNotice');
@@ -506,6 +717,67 @@ function loadVerificationData(data) {
         statusNotice.style.display = 'none';
     }
 }
+
+// Redirect to user modal in manage-users
+function redirectToUserModal() {
+    const userId = document.getElementById('reviewForm').dataset.userId;
+    if (userId) {
+        window.location.href = '<?php echo WEB_ROOT; ?>/index.php?nav=manage-users&auto_user_modal=' + userId;
+    }
+}
+
+// Lightbox functions
+function openLightbox(src, filename) {
+    const lightbox = document.getElementById('imageLightbox');
+    const lightboxImg = document.getElementById('lightboxImage');
+    const lightboxCaption = document.getElementById('lightboxCaption');
+    
+    if (lightbox && lightboxImg) {
+        lightboxImg.src = src;
+        lightboxCaption.textContent = 'File: ' + filename;
+        lightbox.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeLightbox() {
+    const lightbox = document.getElementById('imageLightbox');
+    if (lightbox) {
+        lightbox.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+function downloadLightboxImage() {
+    const lightboxImg = document.getElementById('lightboxImage');
+    if (lightboxImg && lightboxImg.src) {
+        const a = document.createElement('a');
+        a.href = lightboxImg.src;
+        a.download = document.getElementById('lightboxCaption').textContent.replace('File: ', '');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+}
+
+// Close lightbox when clicking outside image
+document.addEventListener('DOMContentLoaded', function() {
+    const lightbox = document.getElementById('imageLightbox');
+    if (lightbox) {
+        lightbox.addEventListener('click', function(event) {
+            if (event.target === lightbox) {
+                closeLightbox();
+            }
+        });
+        
+        // Allow pressing Escape to close lightbox
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && lightbox.style.display === 'block') {
+                closeLightbox();
+            }
+        });
+    }
+});
 </script>
 
 <script>
@@ -543,5 +815,17 @@ function loadVerificationData(data) {
   });
 })();
 </script>
+
+<!-- Lightbox Modal for Image Zoom -->
+<div id="imageLightbox" class="lightbox">
+    <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+    <img class="lightbox-content" id="lightboxImage" src="" alt="Document preview">
+    <div class="lightbox-caption" id="lightboxCaption"></div>
+    <div class="lightbox-controls">
+        <button class="lightbox-btn" onclick="downloadLightboxImage()">
+            <i class="fas fa-download me-1"></i>Download
+        </button>
+    </div>
+</div>
 
 <?php require_once __DIR__ . '/../public/footer.php'; ?>

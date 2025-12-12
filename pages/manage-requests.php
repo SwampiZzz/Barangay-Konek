@@ -10,6 +10,9 @@ require_role([ROLE_STAFF, ROLE_ADMIN, ROLE_SUPERADMIN]);
 // Get search/filter params
 $q = trim($_GET['q'] ?? '');
 $filter = $_GET['filter'] ?? 'all'; // all, pending(1), approved(2), rejected(3), completed(4)
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$per_page = 10;
+$offset = ($page - 1) * $per_page;
 
 // Build query
 $where = [];
@@ -32,6 +35,25 @@ if (in_array($filter, ['pending','approved','rejected','completed'], true)) {
 
 $where_sql = count($where) ? ('WHERE ' . implode(' AND ', $where)) : '';
 
+// Count total for pagination
+$count_sql = "SELECT COUNT(*) as total
+    FROM request r
+    LEFT JOIN users u ON r.user_id = u.id
+    LEFT JOIN profile p ON u.id = p.user_id
+    LEFT JOIN document_type dt ON r.document_type_id = dt.id
+    $where_sql";
+$count_stmt = $conn->prepare($count_sql);
+if ($count_stmt && !empty($bind_params)) {
+    $count_stmt->bind_param($bind_types, ...$bind_params);
+    $count_stmt->execute();
+    $count_result = $count_stmt->get_result();
+    $total_requests = $count_result->fetch_assoc()['total'];
+    $count_stmt->close();
+} else {
+    $total_requests = 0;
+}
+$total_pages = ceil($total_requests / $per_page);
+
 $sql = "
     SELECT r.id, r.user_id, r.document_type_id, r.request_status_id, r.claimed_by,
            r.created_at, dt.name as doc_type, rs.name as status_name,
@@ -43,6 +65,7 @@ $sql = "
     LEFT JOIN profile p ON u.id = p.user_id
     $where_sql
     ORDER BY r.created_at DESC
+    LIMIT $per_page OFFSET $offset
 ";
 
 $stmt = $conn->prepare($sql);
@@ -57,6 +80,23 @@ while ($row = $res->fetch_assoc()) {
     $requests[] = $row;
 }
 $stmt->close();
+
+// Status counts for pills
+$count_query = "SELECT 
+    SUM(CASE WHEN request_status_id = 1 THEN 1 ELSE 0 END) AS pending_count,
+    SUM(CASE WHEN request_status_id = 2 THEN 1 ELSE 0 END) AS approved_count,
+    SUM(CASE WHEN request_status_id = 3 THEN 1 ELSE 0 END) AS rejected_count,
+    SUM(CASE WHEN request_status_id = 4 THEN 1 ELSE 0 END) AS completed_count,
+    COUNT(*) AS total_count
+    FROM request";
+$count_res = db_query($count_query);
+$counts = $count_res ? $count_res->fetch_assoc() : [
+    'pending_count' => 0,
+    'approved_count' => 0,
+    'rejected_count' => 0,
+    'completed_count' => 0,
+    'total_count' => 0,
+];
 
 require_once __DIR__ . '/../public/header.php';
 ?>
@@ -81,11 +121,11 @@ require_once __DIR__ . '/../public/header.php';
         <div class="card-header bg-light">
             <ul class="nav nav-pills card-header-pills mb-0">
                 <?php $base = WEB_ROOT . '/index.php?nav=manage-requests&q=' . urlencode($q); ?>
-                <li class="nav-item"><a class="nav-link <?php echo $filter==='all'?'active':''; ?>" href="<?php echo $base; ?>&filter=all">All</a></li>
-                <li class="nav-item"><a class="nav-link <?php echo $filter==='pending'?'active':''; ?>" href="<?php echo $base; ?>&filter=pending">Pending</a></li>
-                <li class="nav-item"><a class="nav-link <?php echo $filter==='approved'?'active':''; ?>" href="<?php echo $base; ?>&filter=approved">Approved</a></li>
-                <li class="nav-item"><a class="nav-link <?php echo $filter==='rejected'?'active':''; ?>" href="<?php echo $base; ?>&filter=rejected">Rejected</a></li>
-                <li class="nav-item"><a class="nav-link <?php echo $filter==='completed'?'active':''; ?>" href="<?php echo $base; ?>&filter=completed">Completed</a></li>
+                <li class="nav-item"><a class="nav-link <?php echo $filter==='all'?'active':''; ?>" href="<?php echo $base; ?>&filter=all">All <span class="badge <?php echo $filter==='all'?'bg-light text-dark':'bg-secondary'; ?> ms-1"><?php echo $counts['total_count'] ?? 0; ?></span></a></li>
+                <li class="nav-item"><a class="nav-link <?php echo $filter==='pending'?'active':''; ?>" href="<?php echo $base; ?>&filter=pending">Pending <span class="badge <?php echo $filter==='pending'?'bg-light text-dark':'bg-warning text-dark'; ?> ms-1"><?php echo $counts['pending_count'] ?? 0; ?></span></a></li>
+                <li class="nav-item"><a class="nav-link <?php echo $filter==='approved'?'active':''; ?>" href="<?php echo $base; ?>&filter=approved">Approved <span class="badge <?php echo $filter==='approved'?'bg-light text-dark':'bg-info'; ?> ms-1"><?php echo $counts['approved_count'] ?? 0; ?></span></a></li>
+                <li class="nav-item"><a class="nav-link <?php echo $filter==='rejected'?'active':''; ?>" href="<?php echo $base; ?>&filter=rejected">Rejected <span class="badge <?php echo $filter==='rejected'?'bg-light text-dark':'bg-danger'; ?> ms-1"><?php echo $counts['rejected_count'] ?? 0; ?></span></a></li>
+                <li class="nav-item"><a class="nav-link <?php echo $filter==='completed'?'active':''; ?>" href="<?php echo $base; ?>&filter=completed">Completed <span class="badge <?php echo $filter==='completed'?'bg-light text-dark':'bg-success'; ?> ms-1"><?php echo $counts['completed_count'] ?? 0; ?></span></a></li>
             </ul>
         </div>
         <div class="card-body p-0">
@@ -141,6 +181,61 @@ require_once __DIR__ . '/../public/header.php';
                 </div>
             <?php endif; ?>
         </div>
+        
+        <!-- Pagination -->
+        <?php if ($total_pages > 1): ?>
+            <div class="card-footer bg-light">
+                <nav aria-label="Requests pagination">
+                    <ul class="pagination pagination-sm mb-0 justify-content-center">
+                        <?php 
+                        $base_url = WEB_ROOT . '/index.php?nav=manage-requests&filter=' . urlencode($filter) . '&q=' . urlencode($q);
+                        
+                        if ($page > 1): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $page - 1; ?>">Previous</a>
+                            </li>
+                        <?php else: ?>
+                            <li class="page-item disabled">
+                                <span class="page-link">Previous</span>
+                            </li>
+                        <?php endif;
+                        
+                        $start_page = max(1, $page - 2);
+                        $end_page = min($total_pages, $page + 2);
+                        
+                        if ($start_page > 1): ?>
+                            <li class="page-item"><a class="page-link" href="<?php echo $base_url; ?>&page=1">1</a></li>
+                            <?php if ($start_page > 2): ?>
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            <?php endif;
+                        endif;
+                        
+                        for ($i = $start_page; $i <= $end_page; $i++): ?>
+                            <li class="page-item <?php echo $i === $page ? 'active' : ''; ?>">
+                                <a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                            </li>
+                        <?php endfor;
+                        
+                        if ($end_page < $total_pages): 
+                            if ($end_page < $total_pages - 1): ?>
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            <?php endif; ?>
+                            <li class="page-item"><a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $total_pages; ?>"><?php echo $total_pages; ?></a></li>
+                        <?php endif;
+                        
+                        if ($page < $total_pages): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $page + 1; ?>">Next</a>
+                            </li>
+                        <?php else: ?>
+                            <li class="page-item disabled">
+                                <span class="page-link">Next</span>
+                            </li>
+                        <?php endif; ?>
+                    </ul>
+                </nav>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 

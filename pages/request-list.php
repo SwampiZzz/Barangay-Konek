@@ -11,6 +11,9 @@ $user_id = current_user_id();
 // Get search/filter params
 $search = trim($_GET['search'] ?? '');
 $status_filter = intval($_GET['status'] ?? 0);
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$per_page = 10;
+$offset = ($page - 1) * $per_page;
 
 // Build query
 $where_clauses = ['r.user_id = ?'];
@@ -33,6 +36,31 @@ if ($status_filter > 0) {
 
 $where_sql = 'WHERE ' . implode(' AND ', $where_clauses);
 
+// Count total for pagination
+$count_sql = "SELECT COUNT(*) as total FROM request r WHERE r.user_id = ?";
+$count_bind_params = [$user_id];
+$count_bind_types = 'i';
+
+if (!empty($search)) {
+    $count_sql .= ' AND (dt.name LIKE ? OR rs.name LIKE ?)';
+    $count_bind_params[] = "%$search%";
+    $count_bind_params[] = "%$search%";
+    $count_bind_types .= 'ss';
+}
+if ($status_filter > 0) {
+    $count_sql .= ' AND r.request_status_id = ?';
+    $count_bind_params[] = $status_filter;
+    $count_bind_types .= 'i';
+}
+
+$count_stmt = $conn->prepare($count_sql);
+$count_stmt->bind_param($count_bind_types, ...$count_bind_params);
+$count_stmt->execute();
+$count_result = $count_stmt->get_result();
+$total_requests = $count_result->fetch_assoc()['total'];
+$count_stmt->close();
+$total_pages = ceil($total_requests / $per_page);
+
 $sql = "
     SELECT r.id, r.document_type_id, r.request_status_id, r.created_at, r.updated_at,
            dt.name as doc_type, rs.name as status_name
@@ -41,6 +69,7 @@ $sql = "
     LEFT JOIN request_status rs ON r.request_status_id = rs.id
     $where_sql
     ORDER BY r.created_at DESC
+    LIMIT $per_page OFFSET $offset
 ";
 
 $stmt = $conn->prepare($sql);
@@ -141,6 +170,61 @@ require_once __DIR__ . '/../public/header.php';
                     <?php endif; ?>
                 </tbody>
             </table>
+            
+            <!-- Pagination -->
+            <?php if ($total_pages > 1): ?>
+                <div class="mt-3">
+                    <nav aria-label="Requests pagination">
+                        <ul class="pagination pagination-sm justify-content-center">
+                            <?php 
+                            $base_url = WEB_ROOT . '/index.php?nav=request-list&search=' . urlencode($search) . '&status=' . $status_filter;
+                            
+                            if ($page > 1): ?>
+                                <li class="page-item">
+                                    <a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $page - 1; ?>">Previous</a>
+                                </li>
+                            <?php else: ?>
+                                <li class="page-item disabled">
+                                    <span class="page-link">Previous</span>
+                                </li>
+                            <?php endif;
+                            
+                            $start_page = max(1, $page - 2);
+                            $end_page = min($total_pages, $page + 2);
+                            
+                            if ($start_page > 1): ?>
+                                <li class="page-item"><a class="page-link" href="<?php echo $base_url; ?>&page=1">1</a></li>
+                                <?php if ($start_page > 2): ?>
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                <?php endif;
+                            endif;
+                            
+                            for ($i = $start_page; $i <= $end_page; $i++): ?>
+                                <li class="page-item <?php echo $i === $page ? 'active' : ''; ?>">
+                                    <a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                                </li>
+                            <?php endfor;
+                            
+                            if ($end_page < $total_pages): 
+                                if ($end_page < $total_pages - 1): ?>
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                <?php endif; ?>
+                                <li class="page-item"><a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $total_pages; ?>"><?php echo $total_pages; ?></a></li>
+                            <?php endif;
+                            
+                            if ($page < $total_pages): ?>
+                                <li class="page-item">
+                                    <a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $page + 1; ?>">Next</a>
+                                </li>
+                            <?php else: ?>
+                                <li class="page-item disabled">
+                                    <span class="page-link">Next</span>
+                                </li>
+                            <?php endif; ?>
+                        </ul>
+                    </nav>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>
