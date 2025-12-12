@@ -355,14 +355,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['verification_file'])
             }
             
             // Create or update verification record
-            $check = db_query('SELECT id FROM user_verification WHERE user_id = ?', 'i', [$user_id]);
+            $check = db_query('SELECT id, filename FROM user_verification WHERE user_id = ?', 'i', [$user_id]);
             if ($check && $check->num_rows > 0) {
                 // Update existing (resubmission after rejection)
-                $update = db_query('UPDATE user_verification SET document_file = ?, verification_status_id = 1, submitted_at = NOW(), remarks = NULL, verified_at = NULL, verified_by = NULL WHERE user_id = ?', 'ssi', [$filename, $user_id]);
+                $existing = $check->fetch_assoc();
+                $oldFilename = $existing['filename'] ?? '';
+                $update = db_query('UPDATE user_verification SET filename = ?, verification_status_id = 1, submitted_at = NOW(), remarks = NULL, verified_at = NULL, verified_by = NULL WHERE user_id = ?', 'si', [$filename, $user_id]);
                 $success = $update;
+                // If update succeeded, remove previous uploaded file
+                if ($success && !empty($oldFilename) && $oldFilename !== $filename) {
+                    $oldPath = $verification_dir . $oldFilename;
+                    if (file_exists($oldPath)) {
+                        @unlink($oldPath);
+                    }
+                }
             } else {
                 // Create new verification record
-                $insert = db_query('INSERT INTO user_verification (user_id, profile_id, document_file, verification_status_id, submitted_at) VALUES (?, ?, ?, 1, NOW())', 'iis', [$user_id, $profile_id, $filename]);
+                $insert = db_query('INSERT INTO user_verification (user_id, profile_id, filename, verification_status_id, submitted_at) VALUES (?, ?, ?, 1, NOW())', 'iis', [$user_id, $profile_id, $filename]);
                 $success = $insert;
             }
             
@@ -633,7 +642,7 @@ require_once __DIR__ . '/../public/header.php';
                             $verification_status_id = $verification['verification_status_id'] ?? 0;
                             $status_name = $verification['status_name'] ?? 'Not Submitted';
                             $verification_remarks = $verification['remarks'] ?? '';
-                            $document_file = $verification['document_file'] ?? '';
+                            $document_file = $verification['filename'] ?? '';
                             ?>
                             
                             <!-- Verification Status Card -->
@@ -841,16 +850,89 @@ require_once __DIR__ . '/../public/header.php';
                         </div>
                     <?php endif; ?>
                     
-                    <form method="post" action="#" onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">
-                        <div class="alert alert-danger mb-3"><i class="fas fa-exclamation-triangle me-2"></i> Deleting your account is permanent and cannot be undone.</div>
-                        <div class="mb-3">
-                            <label class="form-label">Enter your password to confirm:</label>
-                            <input type="password" class="form-control" name="delete_password" required>
+                    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                                <h5 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Danger Zone</h5>
+                                <p class="mb-2">Deleting your account is a <strong>permanent action</strong> that cannot be undone. Once deleted:</p>
+                                <ul class="mb-3">
+                                    <li>You will immediately be logged out</li>
+                                    <li>All your personal information will be marked as deleted</li>
+                                    <li>Your account cannot be recovered</li>
+                                    <li>You will need to create a new account to access the system again</li>
+                                </ul>
+                                <p class="mb-0 small text-muted">Please ensure you have saved any important information before proceeding.</p>
+                            </div>
+                            
+                            <div class="card border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <h6 class="mb-0"><i class="fas fa-trash me-2"></i>Delete Account</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted mb-4">To delete your account, please enter your password below and confirm your decision:</p>
+                                    
+                                    <form id="deleteAccountForm" method="post" action="#">
+                                        <div class="mb-4">
+                                            <label class="form-label">Current Password <span class="text-danger">*</span></label>
+                                            <input type="password" class="form-control" name="delete_password" placeholder="Enter your password" required>
+                                            <div class="form-text">Your password is required to verify this request</div>
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="confirmDelete" required>
+                                                <label class="form-check-label" for="confirmDelete">
+                                                    I understand that deleting my account is permanent and cannot be undone
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="confirmDataLoss" required>
+                                                <label class="form-check-label" for="confirmDataLoss">
+                                                    I have saved all important information and accept data loss
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mt-4 d-flex gap-2 justify-content-end">
+                                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('confirmDelete').checked = false; document.getElementById('confirmDataLoss').checked = false;">
+                                                Cancel
+                                            </button>
+                                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" id="deleteBtn">
+                                                <i class="fas fa-trash me-2"></i>Delete My Account
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mt-4 text-end">
-                            <button type="submit" class="btn btn-danger">Delete My Account</button>
-                        </div>
-                    </form>
+                    </div>
+                    
+                    <!-- Confirmation Modal -->
+                    <div class="modal fade" id="confirmDeleteModal" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-danger">
+                                <div class="modal-header bg-danger text-white">
+                                    <h5 class="modal-title"><i class="fas fa-exclamation-circle me-2"></i>Confirm Account Deletion</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p class="mb-3"><strong>This action cannot be undone!</strong></p>
+                                    <p class="mb-3">You are about to permanently delete your account. This will:</p>
+                                    <ul class="mb-3">
+                                        <li>Log you out immediately</li>
+                                        <li>Delete all your data</li>
+                                        <li>Prevent you from logging in again</li>
+                                    </ul>
+                                    <p class="mb-0 text-muted"><small>Type <strong>"DELETE"</strong> below to confirm:</small></p>
+                                    <div class="mt-2 mb-3">
+                                        <input type="text" class="form-control form-control-lg text-uppercase text-center" id="deleteConfirmText" placeholder="Type DELETE to confirm" maxlength="6">
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn" disabled>
+                                        <i class="fas fa-trash me-2"></i>Permanently Delete Account
+                                    </button>
+                                </div>
+                            </div>
                 </div>
             </div>
         </div>
@@ -917,6 +999,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 filePreview.style.display = 'block';
             } else {
                 filePreview.style.display = 'none';
+            }
+        });
+    }
+    
+    // Delete account confirmation modal functionality
+    const deleteConfirmText = document.getElementById('deleteConfirmText');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const deleteAccountForm = document.getElementById('deleteAccountForm');
+    const confirmDelete = document.getElementById('confirmDelete');
+    const confirmDataLoss = document.getElementById('confirmDataLoss');
+    
+    if (deleteConfirmText && confirmDeleteBtn) {
+        // Enable/disable confirm button based on text input
+        deleteConfirmText.addEventListener('input', function() {
+            confirmDeleteBtn.disabled = this.value.toUpperCase() !== 'DELETE';
+        });
+        
+        // Handle final confirmation click
+        confirmDeleteBtn.addEventListener('click', function() {
+            if (deleteAccountForm && deleteConfirmText.value.toUpperCase() === 'DELETE') {
+                // Submit the hidden form that was prepared earlier
+                if (confirmDelete.checked && confirmDataLoss.checked) {
+                    // Create and submit the form
+                    deleteAccountForm.submit();
+                }
+            }
+        });
+    }
+    
+    // Validate checkboxes before showing modal
+    const deleteBtn = document.getElementById('deleteBtn');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', function(e) {
+            if (!confirmDelete.checked || !confirmDataLoss.checked) {
+                e.preventDefault();
+                alert('Please read and accept both confirmations before proceeding.');
             }
         });
     }

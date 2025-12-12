@@ -1,14 +1,30 @@
-# Ignore sensitive runtime storage
-/storage/app/private/
-/storage/logs/
-
-# Allow placeholders to keep directories in Git
-!storage/app/private/.gitkeep
-!storage/logs/.gitkeep
-
-# Common OS/editor noise
+# Node / general OS/editor
+node_modules/
 .DS_Store
 Thumbs.db
-*.swp
-*.swo
 .vscode/
+
+# PHP
+vendor/
+composer.lock
+
+# Logs and temp
+storage/logs/
+storage/temp/
+*.log
+
+# Environment/config
+.env
+.env.local
+.env.*
+
+# Private app storage (do not commit PII/docs)
+storage/app/private/
+storage/app/private/**
+storage/app/private/profile_pics/
+storage/app/private/requested_documents/
+storage/app/private/requests/
+
+# Uploaded public assets (if any)
+public/uploads/
+public/uploads/**

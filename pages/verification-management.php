@@ -1,0 +1,547 @@
+<?php
+require_once __DIR__ . '/../config.php';
+require_login();
+$pageTitle = 'Verification Management';
+
+$user_id = current_user_id();
+
+// Check if user is admin
+$role = current_user_role();
+if ($role !== ROLE_ADMIN) {
+    $_SESSION['alert_type'] = 'danger';
+    $_SESSION['alert_message'] = 'Access denied. Only barangay admins can manage verifications.';
+    header('Location: ' . WEB_ROOT . '/index.php?nav=admin-dashboard');
+    exit;
+}
+
+// Get the admin's barangay
+$admin_barangay_res = db_query('SELECT id, name FROM barangay WHERE admin_user_id = ?', 'i', [$user_id]);
+if (!$admin_barangay_res || $admin_barangay_res->num_rows === 0) {
+    $_SESSION['alert_type'] = 'warning';
+    $_SESSION['alert_message'] = 'You are not assigned as an admin to any barangay.';
+    header('Location: ' . WEB_ROOT . '/index.php?nav=admin-dashboard');
+    exit;
+}
+$admin_barangay = $admin_barangay_res->fetch_assoc();
+$barangay_id = $admin_barangay['id'];
+$barangay_name = $admin_barangay['name'];
+
+$alert_type = '';
+$alert_message = '';
+
+// Retrieve alert from session if it exists
+if (isset($_SESSION['alert_type']) && isset($_SESSION['alert_message'])) {
+    $alert_type = $_SESSION['alert_type'];
+    $alert_message = $_SESSION['alert_message'];
+    unset($_SESSION['alert_type']);
+    unset($_SESSION['alert_message']);
+}
+
+// Get filter parameter
+$filter = $_GET['filter'] ?? 'pending'; // pending, verified, rejected, all
+$q = trim($_GET['q'] ?? '');
+$status_map = ['pending' => 1, 'verified' => 2, 'rejected' => 3];
+
+// Handle Approve/Reject Verification
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    $action = $_POST['action'];
+    $verification_id = intval($_POST['verification_id'] ?? 0);
+    $remarks = trim($_POST['remarks'] ?? '');
+    
+    if (empty($verification_id)) {
+        $_SESSION['alert_type'] = 'danger';
+        $_SESSION['alert_message'] = 'Invalid verification ID.';
+    } elseif ($action === 'approve') {
+        // Approve verification
+        $approve = db_query(
+            'UPDATE user_verification SET verification_status_id = 2, verified_by = ?, verified_at = NOW() WHERE id = ?',
+            'ii',
+            [$user_id, $verification_id]
+        );
+        if ($approve) {
+            $_SESSION['alert_type'] = 'success';
+            $_SESSION['alert_message'] = 'User verification approved successfully!';
+        } else {
+            $_SESSION['alert_type'] = 'danger';
+            $_SESSION['alert_message'] = 'Failed to approve verification.';
+        }
+    } elseif ($action === 'reject') {
+        // Reject verification - require remarks
+        if (empty($remarks)) {
+            $_SESSION['alert_type'] = 'danger';
+            $_SESSION['alert_message'] = 'Remarks are required when rejecting a verification.';
+        } else {
+            $reject = db_query(
+                'UPDATE user_verification SET verification_status_id = 3, remarks = ?, verified_by = ?, verified_at = NOW() WHERE id = ?',
+                'sii',
+                [$remarks, $user_id, $verification_id]
+            );
+            if ($reject) {
+                $_SESSION['alert_type'] = 'success';
+                $_SESSION['alert_message'] = 'User verification rejected. User has been notified and can resubmit.';
+            } else {
+                $_SESSION['alert_type'] = 'danger';
+                $_SESSION['alert_message'] = 'Failed to reject verification.';
+            }
+        }
+    }
+    
+    header('Location: ' . WEB_ROOT . '/index.php?nav=verification-management&filter=' . $filter);
+    exit;
+}
+
+// Build query based on filter - filter by admin's barangay
+$where = ' WHERE p.barangay_id = ' . intval($barangay_id);
+if ($filter !== 'all' && isset($status_map[$filter])) {
+    $where .= ' AND uv.verification_status_id = ' . $status_map[$filter];
+}
+
+// Apply search filter (name, username, email)
+if ($q !== '') {
+    $safe = addslashes($q);
+    $safe = str_replace(['%', '_'], ['\\%','\\_'], $safe);
+    $where .= " AND (CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name) LIKE '%$safe%'"
+            . " OR u.username LIKE '%$safe%'"
+            . " OR p.email LIKE '%$safe%')";
+}
+
+// Get all verifications with user info
+$query = "SELECT 
+    uv.id as verification_id,
+    uv.user_id,
+    uv.filename,
+    uv.verification_status_id,
+    uv.submitted_at,
+    uv.remarks,
+    uv.verified_at,
+    vs.name as status_name,
+    u.username,
+    p.first_name,
+    p.middle_name,
+    p.last_name,
+    p.email,
+    p.contact_number,
+    p.birthdate,
+    b.name as barangay_name,
+    admin.username as verified_by_admin
+FROM user_verification uv
+LEFT JOIN verification_status vs ON uv.verification_status_id = vs.id
+LEFT JOIN users u ON uv.user_id = u.id
+LEFT JOIN profile p ON uv.user_id = p.user_id
+LEFT JOIN barangay b ON p.barangay_id = b.id
+LEFT JOIN users admin ON uv.verified_by = admin.id
+$where
+ORDER BY uv.submitted_at DESC";
+
+$result = db_query($query);
+$verifications = [];
+if ($result) {
+    while ($row = $result->fetch_assoc()) {
+        $verifications[] = $row;
+    }
+}
+
+// Count by status for tabs
+$count_query = "SELECT 
+    SUM(CASE WHEN uv.verification_status_id = 1 THEN 1 ELSE 0 END) as pending_count,
+    SUM(CASE WHEN uv.verification_status_id = 2 THEN 1 ELSE 0 END) as verified_count,
+    SUM(CASE WHEN uv.verification_status_id = 3 THEN 1 ELSE 0 END) as rejected_count,
+    COUNT(*) as total_count
+FROM user_verification uv
+LEFT JOIN profile p ON uv.user_id = p.user_id
+WHERE p.barangay_id = " . intval($barangay_id);
+
+$count_result = db_query($count_query);
+$counts = $count_result ? $count_result->fetch_assoc() : ['pending_count' => 0, 'verified_count' => 0, 'rejected_count' => 0, 'total_count' => 0];
+
+require_once __DIR__ . '/../public/header.php';
+?>
+
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="mb-2"><i class="fas fa-certificate me-2"></i>Verification Management</h2>
+            <p class="text-muted mb-0">Review and approve/reject user verification documents for <strong><?php echo htmlspecialchars($barangay_name); ?></strong></p>
+        </div>
+        <div class="col-md-4">
+            <form class="input-group" method="get" action="<?php echo WEB_ROOT; ?>/index.php">
+                <input type="hidden" name="nav" value="verification-management">
+                <input type="hidden" name="filter" value="<?php echo htmlspecialchars($filter); ?>">
+                <input type="text" class="form-control" name="q" value="<?php echo htmlspecialchars($q); ?>" placeholder="Search name, @username, or email...">
+                <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
+            </form>
+        </div>
+    </div>
+
+    <?php if (!empty($alert_message)): ?>
+        <div class="alert alert-<?php echo $alert_type; ?> alert-dismissible fade show mb-4" role="alert">
+            <?php if ($alert_type === 'success'): ?>
+                <i class="fas fa-check-circle me-2"></i>
+            <?php else: ?>
+                <i class="fas fa-exclamation-circle me-2"></i>
+            <?php endif; ?>
+            <?php echo htmlspecialchars($alert_message); ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
+    <!-- Status Tabs -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <ul class="nav nav-pills card-header-pills mb-0" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link <?php echo ($filter === 'pending') ? 'active' : ''; ?>" href="<?php echo WEB_ROOT; ?>/index.php?nav=verification-management&filter=pending">
+                        <i class="fas fa-hourglass-half me-1"></i>Pending
+                        <span class="badge <?php echo ($filter === 'pending') ? 'bg-light text-dark' : 'bg-warning text-dark'; ?> ms-2"><?php echo $counts['pending_count'] ?? 0; ?></span>
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link <?php echo ($filter === 'verified') ? 'active' : ''; ?>" href="<?php echo WEB_ROOT; ?>/index.php?nav=verification-management&filter=verified">
+                        <i class="fas fa-check-circle me-1"></i>Verified
+                        <span class="badge <?php echo ($filter === 'verified') ? 'bg-light text-dark' : 'bg-success'; ?> ms-2"><?php echo $counts['verified_count'] ?? 0; ?></span>
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link <?php echo ($filter === 'rejected') ? 'active' : ''; ?>" href="<?php echo WEB_ROOT; ?>/index.php?nav=verification-management&filter=rejected">
+                        <i class="fas fa-times-circle me-1"></i>Rejected
+                        <span class="badge <?php echo ($filter === 'rejected') ? 'bg-light text-dark' : 'bg-danger'; ?> ms-2"><?php echo $counts['rejected_count'] ?? 0; ?></span>
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link <?php echo ($filter === 'all') ? 'active' : ''; ?>" href="<?php echo WEB_ROOT; ?>/index.php?nav=verification-management&filter=all">
+                        <i class="fas fa-list me-1"></i>All
+                        <span class="badge <?php echo ($filter === 'all') ? 'bg-light text-dark' : 'bg-secondary'; ?> ms-2"><?php echo $counts['total_count'] ?? 0; ?></span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card-body p-0">
+            <!-- Verification List -->
+            <?php if (empty($verifications)): ?>
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted mb-0">No verifications found for this filter.</p>
+                </div>
+            <?php else: ?>
+                <div class="list-group list-group-flush">
+                    <?php foreach ($verifications as $v): ?>
+                        <div class="list-group-item list-group-item-action">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center">
+                                        <?php 
+                                            $uid = intval($v['user_id']);
+                                            $picDir = __DIR__ . '/../storage/app/private/profile_pics/';
+                                            $picWeb = WEB_ROOT . '/storage/app/private/profile_pics/';
+                                            $picName = 'user_' . $uid . '.jpg';
+                                            $picPath = $picDir . $picName;
+                                        ?>
+                                        <?php if (file_exists($picPath)): ?>
+                                            <img src="<?php echo $picWeb . $picName; ?>" alt="Profile" class="rounded-circle me-3" style="width:50px;height:50px;object-fit:cover;">
+                                        <?php else: ?>
+                                            <div class="avatar-circle bg-primary text-white me-3" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px;">
+                                                <?php echo strtoupper(substr($v['first_name'], 0, 1) . substr($v['last_name'], 0, 1)); ?>
+                                            </div>
+                                        <?php endif; ?>
+                                        <div>
+                                            <h6 class="mb-1"><?php echo htmlspecialchars($v['first_name'] . ' ' . $v['middle_name'] . ' ' . $v['last_name']); ?></h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-user me-1"></i>@<?php echo htmlspecialchars($v['username']); ?>
+                                                <span class="mx-2">•</span>
+                                                <i class="fas fa-envelope me-1"></i><?php echo htmlspecialchars($v['email'] ?? 'N/A'); ?>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">
+                                        <i class="far fa-calendar me-1"></i><?php echo date('M d, Y', strtotime($v['submitted_at'])); ?>
+                                    </small>
+                                    <small class="text-muted">
+                                        <i class="far fa-clock me-1"></i><?php echo date('h:i A', strtotime($v['submitted_at'])); ?>
+                                    </small>
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <?php if ($v['verification_status_id'] == 1): ?>
+                                        <span class="badge bg-warning text-dark fs-6"><i class="fas fa-hourglass-half me-1"></i>Pending</span>
+                                    <?php elseif ($v['verification_status_id'] == 2): ?>
+                                        <span class="badge bg-success fs-6"><i class="fas fa-check-circle me-1"></i>Verified</span>
+                                    <?php else: ?>
+                                        <span class="badge bg-danger fs-6"><i class="fas fa-times-circle me-1"></i>Rejected</span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="col-md-1 text-end">
+                                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#reviewModal" 
+                                            onclick='loadVerificationData(<?php echo json_encode($v); ?>)'>
+                                        <i class="fas fa-clipboard-check me-1"></i>Review
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<!-- Single Verification Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <div class="d-flex align-items-center w-100">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width:44px;height:44px;">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="modal-title mb-0">Verification Ticket <span class="text-muted">#<span id="modalVerificationId"></span></span></h5>
+                        <small class="text-muted">Review the submission details and take action</small>
+                    </div>
+                    <button type="button" class="btn btn-light btn-sm ms-3" data-bs-dismiss="modal">
+                        Close
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body pt-3">
+                <div class="row g-4">
+                    <!-- Left Column - User Info & Document -->
+                    <div class="col-lg-7">
+                        <!-- User Information Card -->
+                        <div class="card border-0 shadow-sm mb-3">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <img id="modalAvatarImg" src="#" alt="Profile" class="rounded-circle me-3" style="width:60px;height:60px;object-fit:cover;display:none;" onerror="this.style.display='none'; document.getElementById('modalAvatar').style.display='flex';">
+                                    <div class="avatar-circle bg-primary text-white me-3" id="modalAvatar" style="width: 60px; height: 60px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-weight: bold; font-size: 24px;"></div>
+                                    <div>
+                                        <h5 class="mb-0" id="modalFullName"></h5>
+                                        <small class="text-muted" id="modalUsername"></small>
+                                    </div>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <small class="text-muted d-block mb-1">Email</small>
+                                        <div id="modalEmail" class="fw-semibold"></div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted d-block mb-1">Contact</small>
+                                        <div id="modalContact" class="fw-semibold"></div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted d-block mb-1">Birthdate</small>
+                                        <div id="modalBirthdate" class="fw-semibold"></div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted d-block mb-1">Barangay</small>
+                                        <div id="modalBarangay" class="fw-semibold"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submission Details Card -->
+                        <div class="card border-0 shadow-sm mb-3">
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-12">
+                                        <small class="text-muted d-block mb-1">Document File</small>
+                                        <div id="modalFilename" class="fw-semibold"></div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted d-block mb-1">Submitted</small>
+                                        <div id="modalSubmitted" class="fw-semibold"></div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted d-block mb-1">Status</small>
+                                        <div id="modalStatus"></div>
+                                    </div>
+                                    <div class="col-md-12" id="modalVerifiedSection" style="display: none;">
+                                        <div class="border-top my-2"></div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <small class="text-muted d-block mb-1">Reviewed By</small>
+                                                <div id="modalReviewedBy" class="fw-semibold"></div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <small class="text-muted d-block mb-1">Review Date</small>
+                                                <div id="modalReviewDate" class="fw-semibold"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12" id="modalRemarksSection" style="display: none;">
+                                        <div class="border-top my-2"></div>
+                                        <small class="text-muted d-block mb-2">Admin Remarks</small>
+                                        <div class="alert alert-danger mb-0" id="modalRemarks"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column - Document Preview & Actions -->
+                    <div class="col-lg-5">
+                        <!-- Document Preview -->
+                        <div class="card border-0 shadow-sm mb-3" id="modalPreviewCard">
+                            <div class="card-body p-0 text-center" id="modalDocumentPreview"></div>
+                        </div>
+
+                        <!-- Action Form for All Verifications -->
+                        <div class="card border-0 shadow-sm" id="modalActionCard" style="display: none;">
+                            <div class="card-body">
+                                <h6 class="mb-3"><i class="fas fa-gavel me-2"></i>Review Decision</h6>
+                                <div class="alert alert-info small mb-3" id="statusChangeNotice" style="display:none;">
+                                    <i class="fas fa-info-circle me-1"></i>This verification is already processed. You can change the status if needed.
+                                </div>
+                                <form method="post" id="reviewForm" novalidate>
+                                    <input type="hidden" name="verification_id" id="formVerificationId">
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Remarks</label>
+                                        <textarea class="form-control" name="remarks" id="remarksInput" rows="4" placeholder="Add notes. Required when rejecting."></textarea>
+                                        <div class="invalid-feedback">Remarks are required to reject a verification.</div>
+                                    </div>
+                                    
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" name="action" value="approve" class="btn btn-success flex-grow-1" id="approveBtn">
+                                            <i class="fas fa-check-circle me-2"></i>Approve
+                                        </button>
+                                        <button type="submit" name="action" value="reject" class="btn btn-outline-danger flex-grow-1" id="rejectBtn">
+                                            <i class="fas fa-times-circle me-2"></i>Reject
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function loadVerificationData(data) {
+    // Basic Info
+    document.getElementById('modalVerificationId').textContent = data.verification_id;
+    document.getElementById('modalFullName').textContent = data.first_name + ' ' + data.middle_name + ' ' + data.last_name;
+    document.getElementById('modalUsername').textContent = '@' + data.username;
+    document.getElementById('modalEmail').textContent = data.email || 'N/A';
+    document.getElementById('modalContact').textContent = data.contact_number || 'N/A';
+    document.getElementById('modalBirthdate').textContent = data.birthdate ? new Date(data.birthdate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+    document.getElementById('modalBarangay').textContent = data.barangay_name || 'N/A';
+    
+    // Avatar
+    const initials = (data.first_name?.charAt(0) || '').toUpperCase() + (data.last_name?.charAt(0) || '').toUpperCase();
+    const avatarEl = document.getElementById('modalAvatar');
+    const avatarImg = document.getElementById('modalAvatarImg');
+    avatarEl.textContent = initials || '';
+    const profilePicBase = '<?php echo WEB_ROOT; ?>/storage/app/private/profile_pics';
+    avatarImg.src = profilePicBase + '/user_' + data.user_id + '.jpg';
+    avatarImg.style.display = 'block';
+    avatarEl.style.display = 'none';
+    
+    // Document Info
+    document.getElementById('modalFilename').textContent = data.filename || 'N/A';
+    document.getElementById('modalSubmitted').textContent = new Date(data.submitted_at).toLocaleString('en-US', { 
+        year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+    });
+    
+    // Status Badge
+    let statusHTML = '';
+    if (data.verification_status_id == 1) {
+        statusHTML = '<span class="badge bg-warning text-dark fs-6"><i class="fas fa-hourglass-half me-1"></i>Pending Review</span>';
+    } else if (data.verification_status_id == 2) {
+        statusHTML = '<span class="badge bg-success fs-6"><i class="fas fa-check-circle me-1"></i>Verified</span>';
+    } else {
+        statusHTML = '<span class="badge bg-danger fs-6"><i class="fas fa-times-circle me-1"></i>Rejected</span>';
+    }
+    document.getElementById('modalStatus').innerHTML = statusHTML;
+    
+    // Show/Hide Verified Section
+    if (data.verification_status_id != 1) {
+        document.getElementById('modalVerifiedSection').style.display = 'block';
+        document.getElementById('modalReviewedBy').textContent = data.verified_by_admin || 'System';
+        document.getElementById('modalReviewDate').textContent = data.verified_at ? new Date(data.verified_at).toLocaleString() : 'N/A';
+    } else {
+        document.getElementById('modalVerifiedSection').style.display = 'none';
+    }
+    
+    // Show/Hide Remarks Section
+    if (data.verification_status_id == 3 && data.remarks) {
+        document.getElementById('modalRemarksSection').style.display = 'block';
+        document.getElementById('modalRemarks').textContent = data.remarks;
+    } else {
+        document.getElementById('modalRemarksSection').style.display = 'none';
+    }
+    
+    // Document Preview
+    const ext = data.filename ? data.filename.split('.').pop().toLowerCase() : '';
+    const previewEl = document.getElementById('modalDocumentPreview');
+    
+    if (['jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
+        previewEl.innerHTML = `<img src="<?php echo WEB_ROOT; ?>/storage/app/private/requests/${data.filename}" class="img-fluid w-100" style="max-height: 600px; object-fit: contain;">`;
+    } else {
+        const fileUrl = `<?php echo WEB_ROOT; ?>/storage/app/private/requests/${data.filename}`;
+        previewEl.innerHTML = `<div class="py-5">
+            <i class="fas fa-file fa-4x text-muted mb-3"></i>
+            <p class="text-muted mb-2">Preview not available</p>
+            <div class="d-flex justify-content-center gap-2">
+                <a class="btn btn-primary" href="${fileUrl}" target="_blank" rel="noopener">Open File</a>
+                <a class="btn btn-outline-secondary" href="${fileUrl}" download>Download</a>
+            </div>
+            <small class="text-muted d-block mt-2">File type: ${ext ? ext.toUpperCase() : 'UNKNOWN'}</small>
+        </div>`;
+    }
+    
+    // Show Action Form for all statuses (allow status changes)
+    document.getElementById('modalActionCard').style.display = 'block';
+    document.getElementById('formVerificationId').value = data.verification_id;
+    
+    // Show notice if already processed
+    const statusNotice = document.getElementById('statusChangeNotice');
+    if (data.verification_status_id != 1) {
+        statusNotice.style.display = 'block';
+    } else {
+        statusNotice.style.display = 'none';
+    }
+}
+</script>
+
+<script>
+// Inline validation: require remarks when rejecting, confirmation when approving
+(function(){
+  const form = document.getElementById('reviewForm');
+  if (!form) return;
+  form.addEventListener('submit', function(e){
+    const submitter = e.submitter || null;
+    if (!submitter) return; // unsafe older browsers
+    const action = submitter.value;
+    
+    if (action === 'approve') {
+      // Double-check confirmation for approval
+      if (!confirm('Are you sure you want to approve this verification request? The user will be granted full access to the system.')) {
+        e.preventDefault();
+        return;
+      }
+    } else if (action === 'reject') {
+      const remarks = document.getElementById('remarksInput');
+      if (remarks && remarks.value.trim() === '') {
+        e.preventDefault();
+        remarks.classList.add('is-invalid');
+        remarks.focus();
+        return;
+      } else if (remarks) {
+        remarks.classList.remove('is-invalid');
+      }
+      // Double-check confirmation for rejection
+      if (!confirm('Are you sure you want to reject this verification? The user will be notified and can resubmit with corrections.')) {
+        e.preventDefault();
+        return;
+      }
+    }
+  });
+})();
+</script>
+
+<?php require_once __DIR__ . '/../public/footer.php'; ?>

@@ -46,6 +46,8 @@ $pages = [
     
     // Admin pages
     'admin-dashboard' => ['file' => 'pages/admin-dashboard.php', 'roles' => [ROLE_ADMIN]],
+    'verification-management' => ['file' => 'pages/verification-management.php', 'roles' => [ROLE_ADMIN]],
+    'manage-users' => ['file' => 'pages/manage-users.php', 'roles' => [ROLE_ADMIN]],
     'barangay-overview' => ['file' => 'pages/barangay-overview.php', 'roles' => [ROLE_ADMIN]],
     'activity-logs' => ['file' => 'pages/activity-logs.php', 'roles' => [ROLE_ADMIN]],
     
