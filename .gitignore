@@ -19,11 +19,14 @@ storage/temp/
 .env.*
 
 # Private app storage (do not commit PII/docs)
-storage/app/private/
-storage/app/private/**
-storage/app/private/profile_pics/
-storage/app/private/requested_documents/
-storage/app/private/requests/
+# Ignore contents but keep folder structure
+storage/app/private/*
+!storage/app/private/profile_pics/
+!storage/app/private/requests/
+storage/app/private/profile_pics/*
+!storage/app/private/profile_pics/.gitkeep
+storage/app/private/requests/*
+!storage/app/private/requests/.gitkeep
 
 # Uploaded public assets (if any)
 public/uploads/
