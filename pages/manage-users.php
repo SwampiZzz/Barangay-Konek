@@ -4,12 +4,12 @@ require_login();
 
 $pageTitle = 'Manage Users';
 
-// Only barangay admins manage users
+// Allow barangay admins and staff to view users
 $role = current_user_role();
-if ($role !== ROLE_ADMIN) {
+if ($role !== ROLE_ADMIN && $role !== ROLE_STAFF) {
     $_SESSION['alert_type'] = 'danger';
-    $_SESSION['alert_message'] = 'Access denied. Only barangay admins can manage users.';
-    header('Location: ' . WEB_ROOT . '/index.php?nav=admin-dashboard');
+    $_SESSION['alert_message'] = 'Access denied. Only barangay admins and staff can view users.';
+    header('Location: ' . WEB_ROOT . '/index.php?nav=home');
     exit;
 }
 
@@ -38,17 +38,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     exit;
 }
 
-// Admin's barangay
-$admin_barangay_res = db_query('SELECT id, name FROM barangay WHERE admin_user_id = ?', 'i', [$user_id]);
-if (!$admin_barangay_res || $admin_barangay_res->num_rows === 0) {
-    $_SESSION['alert_type'] = 'warning';
-    $_SESSION['alert_message'] = 'You are not assigned as an admin to any barangay.';
-    header('Location: ' . WEB_ROOT . '/index.php?nav=admin-dashboard');
-    exit;
+// Admin/Staff barangay (from profile). If missing, keep user on page with warning and empty results.
+$barangay_id = 0;
+$barangay_name = '';
+$admin_barangay_res = db_query('SELECT b.id, b.name FROM barangay b JOIN profile p ON b.id = p.barangay_id WHERE p.user_id = ?', 'i', [$user_id]);
+if ($admin_barangay_res && $admin_barangay_res->num_rows > 0) {
+    $admin_barangay = $admin_barangay_res->fetch_assoc();
+    $barangay_id = intval($admin_barangay['id']);
+    $barangay_name = $admin_barangay['name'] ?? '';
+} else {
+    $alert_type = 'warning';
+    $alert_message = 'You are not assigned to any barangay. Please contact your administrator.';
 }
-$admin_barangay = $admin_barangay_res->fetch_assoc();
-$barangay_id = intval($admin_barangay['id']);
-$barangay_name = $admin_barangay['name'];
 
 // Auto-load user modal if requested from verification-management
 $auto_user_modal = isset($_GET['auto_user_modal']) ? intval($_GET['auto_user_modal']) : 0;
@@ -105,15 +106,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 $filter = $_GET['filter'] ?? 'all'; // all, user, staff
 $q = trim($_GET['q'] ?? '');
 $sort = $_GET['sort'] ?? 'date_desc'; // date_desc, date_asc, name_asc, role_asc
+$status = $_GET['status'] ?? 'all'; // all, verified, not_verified, na
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $per_page = 10;
 $offset = ($page - 1) * $per_page;
 $role_map = ['user'=>4, 'staff'=>3]; // from usertype table (admins excluded)
 
-$where = ' WHERE p.barangay_id = ' . $barangay_id . ' AND u.usertype_id IN (3,4)'; // Only staff (3) and users (4)
+$where = ' WHERE p.barangay_id = ' . $barangay_id . ' AND u.usertype_id IN (2,3,4)'; // Admins (2), staff (3) and users (4)
 if (in_array($filter, ['user','staff'], true)) {
     $where .= ' AND u.usertype_id = ' . $role_map[$filter];
 }
+
+// Apply status filter
+if ($status === 'verified') {
+    $where .= ' AND u.usertype_id = 4 AND uv.verification_status_id = 2';
+} elseif ($status === 'not_verified') {
+    $where .= ' AND u.usertype_id = 4 AND (uv.verification_status_id IS NULL OR uv.verification_status_id != 2)';
+} elseif ($status === 'na') {
+    $where .= ' AND u.usertype_id = 3'; // Staff only
+}
+
 if ($q !== '') {
     $safe = addslashes($q);
     $safe = str_replace(['%','_'], ['\\%','\\_'], $safe);
@@ -125,6 +137,7 @@ if ($q !== '') {
 $count_query = "SELECT COUNT(*) as total
           FROM users u
           LEFT JOIN profile p ON u.id = p.user_id
+          LEFT JOIN user_verification uv ON u.id = uv.user_id
           $where";
 $count_res = db_query($count_query);
 $total_users = $count_res ? $count_res->fetch_assoc()['total'] : 0;
@@ -196,7 +209,7 @@ require_once __DIR__ . '/../public/header.php';
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-light d-flex justify-content-between align-items-center">
             <div>
-                <?php $base = WEB_ROOT . '/index.php?nav=manage-users&q=' . urlencode($q) . '&sort=' . htmlspecialchars($sort); ?>
+                <?php $base = WEB_ROOT . '/index.php?nav=manage-users&q=' . urlencode($q) . '&sort=' . htmlspecialchars($sort) . '&status=' . htmlspecialchars($status); ?>
                 <ul class="nav nav-pills card-header-pills mb-0">
                     <li class="nav-item"><a class="nav-link <?php echo $filter==='all'?'active':''; ?>" href="<?php echo $base; ?>&filter=all">All Users</a></li>
                     <li class="nav-item"><a class="nav-link <?php echo $filter==='user'?'active':''; ?>" href="<?php echo $base; ?>&filter=user">Residents</a></li>
@@ -208,8 +221,15 @@ require_once __DIR__ . '/../public/header.php';
                     <input type="hidden" name="nav" value="manage-users">
                     <input type="hidden" name="filter" value="<?php echo htmlspecialchars($filter); ?>">
                     <input type="hidden" name="q" value="<?php echo htmlspecialchars($q); ?>">
+                    <label for="statusFilter" class="form-label mb-0" style="font-size: 0.9rem; font-weight: 500;">Status:</label>
+                    <select id="statusFilter" name="status" class="form-select form-select-sm" style="width: 150px;" onchange="this.form.submit()">
+                        <option value="all" <?php echo $status === 'all' ? 'selected' : ''; ?>>All Status</option>
+                        <option value="verified" <?php echo $status === 'verified' ? 'selected' : ''; ?>>Verified</option>
+                        <option value="not_verified" <?php echo $status === 'not_verified' ? 'selected' : ''; ?>>Not Verified</option>
+                        <option value="na" <?php echo $status === 'na' ? 'selected' : ''; ?>>N/A (Staff)</option>
+                    </select>
                     <label for="sortBy" class="form-label mb-0" style="font-size: 0.9rem; font-weight: 500;">Sort:</label>
-                    <select id="sortBy" name="sort" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                    <select id="sortBy" name="sort" class="form-select form-select-sm" style="width: 150px;" onchange="this.form.submit()">
                         <option value="date_desc" <?php echo $sort === 'date_desc' ? 'selected' : ''; ?>>Newest First</option>
                         <option value="date_asc" <?php echo $sort === 'date_asc' ? 'selected' : ''; ?>>Oldest First</option>
                         <option value="name_asc" <?php echo $sort === 'name_asc' ? 'selected' : ''; ?>>Name (A-Z)</option>
@@ -269,8 +289,14 @@ require_once __DIR__ . '/../public/header.php';
                                     // Only show verification status for regular users (usertype_id 4)
                                     if ($ut === 4):
                                         $vid = intval($u['verification_status_id'] ?? 0);
-                                        $badge = $vid===2?'success':($vid===1?'warning text-dark':($vid===3?'danger':'secondary'));
-                                        $label = $u['status_name'] ?? 'not submitted';
+                                        // Simplified: Verified (green) or Not Verified (red)
+                                        if ($vid === 2) {
+                                            $badge = 'success';
+                                            $label = 'Verified';
+                                        } else {
+                                            $badge = 'danger';
+                                            $label = 'Not Verified';
+                                        }
                                     ?>
                                         <span class="badge bg-<?php echo $badge; ?> fs-6"><?php echo htmlspecialchars($label); ?></span>
                                     <?php else: ?>
@@ -295,7 +321,7 @@ require_once __DIR__ . '/../public/header.php';
                 <nav aria-label="Users pagination">
                     <ul class="pagination pagination-sm mb-0 justify-content-center">
                         <?php 
-                        $base_url = WEB_ROOT . '/index.php?nav=manage-users&filter=' . urlencode($filter) . '&q=' . urlencode($q) . '&sort=' . urlencode($sort);
+                        $base_url = WEB_ROOT . '/index.php?nav=manage-users&filter=' . urlencode($filter) . '&q=' . urlencode($q) . '&sort=' . urlencode($sort) . '&status=' . urlencode($status);
                         
                         // Previous button
                         if ($page > 1): ?>
@@ -426,22 +452,28 @@ require_once __DIR__ . '/../public/header.php';
                             </div>
                         </div>
                     </div>
+                    <?php if ($role === ROLE_ADMIN): ?>
                     <a href="#" id="viewVerificationBtn" class="btn btn-info w-100">
                         <i class="fas fa-external-link-alt me-1"></i> View Verification Ticket
                     </a>
+                    <?php endif; ?>
                 </div>
 
-                <!-- Role Management Section -->
-                <h6 class="mb-3"><i class="fas fa-shield-alt me-2 text-warning"></i>Account Management</h6>
-                <div class="mb-3">
-                    <label for="adminPwdField" class="form-label">Admin Password</label>
-                    <input type="password" id="adminPwdField" class="form-control" placeholder="Enter your password to authorize changes" aria-describedby="adminPwdHelp adminPwdError">
-                    <div id="adminPwdHelp" class="form-text">Required to promote/demote users.</div>
-                    <div id="adminPwdError" class="invalid-feedback"></div>
+                <!-- Role Management Section (Admin Only) -->
+                <?php if ($role === ROLE_ADMIN): ?>
+                <div id="accountMgmtSection">
+                    <h6 class="mb-3"><i class="fas fa-shield-alt me-2 text-warning"></i>Account Management</h6>
+                    <div class="mb-3">
+                        <label for="adminPwdField" class="form-label">Admin Password</label>
+                        <input type="password" id="adminPwdField" class="form-control" placeholder="Enter your password to authorize changes" aria-describedby="adminPwdHelp adminPwdError">
+                        <div id="adminPwdHelp" class="form-text">Required to promote/demote users.</div>
+                        <div id="adminPwdError" class="invalid-feedback"></div>
+                    </div>
+                    <div id="roleActionsContainer" class="d-flex gap-2">
+                        <!-- Buttons will be inserted here -->
+                    </div>
                 </div>
-                <div id="roleActionsContainer" class="d-flex gap-2">
-                    <!-- Buttons will be inserted here -->
-                </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -478,8 +510,8 @@ function loadUserData(u){
     document.getElementById('usrEmail').textContent = u.email || 'N/A';
     document.getElementById('usrContact').textContent = u.contact_number || 'N/A';
     document.getElementById('usrBirth').textContent = u.birthdate ? new Date(u.birthdate).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'}) : 'N/A';
-    // Normalize role label: 4 -> Resident, 3 -> Staff
-    const roleLabel = (parseInt(u.usertype_id || 0, 10) === 4) ? 'Resident' : ((parseInt(u.usertype_id || 0, 10) === 3) ? 'Staff' : 'Unknown');
+    // Normalize role label: 2 -> Admin, 3 -> Staff, 4 -> Resident
+    const roleLabel = (parseInt(u.usertype_id || 0, 10) === 2) ? 'Admin' : ((parseInt(u.usertype_id || 0, 10) === 3) ? 'Staff' : ((parseInt(u.usertype_id || 0, 10) === 4) ? 'Resident' : 'Unknown'));
     document.getElementById('usrRole').textContent = roleLabel;
     document.getElementById('usrCreated').textContent = u.created_at ? new Date(u.created_at).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'}) : 'Unknown';
     
@@ -533,6 +565,10 @@ function loadUserData(u){
         verSection.style.display = 'none';
     }
     
+    // Toggle Account Management visibility for admin viewing admin
+    const acct = document.getElementById('accountMgmtSection');
+    if (acct) acct.style.display = (ut === 2) ? 'none' : 'block';
+
     // Role management actions
     populateRoleActions(u, ut);
 }
@@ -540,6 +576,12 @@ function loadUserData(u){
 function populateRoleActions(u, ut) {
     const container = document.getElementById('roleActionsContainer');
     container.innerHTML = '';
+    
+    // If viewing an admin, don't show role management options
+    if (ut === 2) {
+        // Admins can only be managed by superadmins, show read-only view
+        return;
+    }
     
     if (ut === 4) { // Resident
         const btn = document.createElement('button');

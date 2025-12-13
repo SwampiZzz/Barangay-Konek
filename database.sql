@@ -6,6 +6,7 @@ DROP TABLE IF EXISTS complaint_attachment;
 DROP TABLE IF EXISTS complaint; DROP TABLE IF EXISTS complaint_status; 
 DROP TABLE IF EXISTS requested_document; DROP TABLE IF EXISTS request; 
 DROP TABLE IF EXISTS request_status; DROP TABLE IF EXISTS document_type; 
+DROP TABLE IF EXISTS document_requirement;
 DROP TABLE IF EXISTS user_verification; DROP TABLE IF EXISTS verification_status; 
 DROP TABLE IF EXISTS announcement; 
 DROP TABLE IF EXISTS barangay; 
@@ -56,12 +57,11 @@ CREATE TABLE barangay (
     address_details TEXT NULL, 
     contact_number VARCHAR(25) NULL, 
     email VARCHAR(255) NULL, 
-    admin_user_id INT NULL, 
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP, 
     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
     deleted_at TIMESTAMP NULL DEFAULT NULL, 
-    FOREIGN KEY (city_id) REFERENCES city(id) ON DELETE CASCADE ON UPDATE CASCADE, 
-    FOREIGN KEY (admin_user_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE ); 
+    FOREIGN KEY (city_id) REFERENCES city(id) ON DELETE CASCADE ON UPDATE CASCADE
+); 
 
 -- sex table 
 CREATE TABLE sex (

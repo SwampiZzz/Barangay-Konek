@@ -14,8 +14,8 @@ if ($role !== ROLE_ADMIN) {
     exit;
 }
 
-// Get the admin's barangay
-$admin_barangay_res = db_query('SELECT id, name FROM barangay WHERE admin_user_id = ?', 'i', [$user_id]);
+// Get the admin's barangay (from profile table)
+$admin_barangay_res = db_query('SELECT b.id, b.name FROM barangay b JOIN profile p ON b.id = p.barangay_id WHERE p.user_id = ?', 'i', [$user_id]);
 if (!$admin_barangay_res || $admin_barangay_res->num_rows === 0) {
     $_SESSION['alert_type'] = 'warning';
     $_SESSION['alert_message'] = 'You are not assigned as an admin to any barangay.';
@@ -40,6 +40,7 @@ if (isset($_SESSION['alert_type']) && isset($_SESSION['alert_message'])) {
 // Get filter parameter
 $filter = $_GET['filter'] ?? 'all'; // pending, verified, rejected, all
 $q = trim($_GET['q'] ?? '');
+$sort = $_GET['sort'] ?? 'date_desc'; // date_desc, date_asc, name_asc
 $auto_review_modal = isset($_GET['auto_review_modal']) ? intval($_GET['auto_review_modal']) : 0;
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $per_page = 10;
@@ -148,8 +149,17 @@ LEFT JOIN barangay b ON p.barangay_id = b.id
 LEFT JOIN users admin ON uv.verified_by = admin.id
 LEFT JOIN profile ap ON admin.id = ap.user_id
 $where
-ORDER BY uv.submitted_at DESC
-LIMIT $per_page OFFSET $offset";
+ORDER BY ";
+
+// Apply sorting
+switch ($sort) {
+    case 'date_asc': $query .= "uv.submitted_at ASC"; break;
+    case 'name_asc': $query .= "CONCAT_WS(' ', p.first_name, p.middle_name, p.last_name) ASC"; break;
+    case 'date_desc':
+    default: $query .= "uv.submitted_at DESC"; break;
+}
+
+$query .= " LIMIT $per_page OFFSET $offset";
 
 $result = db_query($query);
 $verifications = [];
@@ -302,33 +312,49 @@ require_once __DIR__ . '/../public/header.php';
 
     <!-- Status Tabs -->
     <div class="card shadow-sm mb-4">
-        <div class="card-header bg-light">
-            <ul class="nav nav-pills card-header-pills mb-0" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link <?php echo ($filter === 'pending') ? 'active' : ''; ?>" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-verifications&filter=pending">
-                        Pending
-                        <span class="badge <?php echo ($filter === 'pending') ? 'bg-light text-dark' : 'bg-warning text-dark'; ?> ms-2"><?php echo $counts['pending_count'] ?? 0; ?></span>
-                    </a>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link <?php echo ($filter === 'verified') ? 'active' : ''; ?>" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-verifications&filter=verified">
-                        Verified
-                        <span class="badge <?php echo ($filter === 'verified') ? 'bg-light text-dark' : 'bg-success'; ?> ms-2"><?php echo $counts['verified_count'] ?? 0; ?></span>
-                    </a>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link <?php echo ($filter === 'rejected') ? 'active' : ''; ?>" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-verifications&filter=rejected">
-                        Rejected
-                        <span class="badge <?php echo ($filter === 'rejected') ? 'bg-light text-dark' : 'bg-danger'; ?> ms-2"><?php echo $counts['rejected_count'] ?? 0; ?></span>
-                    </a>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link <?php echo ($filter === 'all') ? 'active' : ''; ?>" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-verifications&filter=all">
-                        All
-                        <span class="badge <?php echo ($filter === 'all') ? 'bg-light text-dark' : 'bg-secondary'; ?> ms-2"><?php echo $counts['total_count'] ?? 0; ?></span>
-                    </a>
-                </li>
-            </ul>
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <div>
+                <?php $base = WEB_ROOT . '/index.php?nav=manage-verifications&q=' . urlencode($q) . '&sort=' . htmlspecialchars($sort); ?>
+                <ul class="nav nav-pills card-header-pills mb-0" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link <?php echo ($filter === 'all') ? 'active' : ''; ?>" href="<?php echo $base; ?>&filter=all">
+                            All
+                            <span class="badge <?php echo ($filter === 'all') ? 'bg-light text-dark' : 'bg-secondary'; ?> ms-2"><?php echo $counts['total_count'] ?? 0; ?></span>
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link <?php echo ($filter === 'pending') ? 'active' : ''; ?>" href="<?php echo $base; ?>&filter=pending">
+                            Pending
+                            <span class="badge <?php echo ($filter === 'pending') ? 'bg-light text-dark' : 'bg-warning text-dark'; ?> ms-2"><?php echo $counts['pending_count'] ?? 0; ?></span>
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link <?php echo ($filter === 'verified') ? 'active' : ''; ?>" href="<?php echo $base; ?>&filter=verified">
+                            Verified
+                            <span class="badge <?php echo ($filter === 'verified') ? 'bg-light text-dark' : 'bg-success'; ?> ms-2"><?php echo $counts['verified_count'] ?? 0; ?></span>
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link <?php echo ($filter === 'rejected') ? 'active' : ''; ?>" href="<?php echo $base; ?>&filter=rejected">
+                            Rejected
+                            <span class="badge <?php echo ($filter === 'rejected') ? 'bg-light text-dark' : 'bg-danger'; ?> ms-2"><?php echo $counts['rejected_count'] ?? 0; ?></span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="ms-3">
+                <form class="d-flex align-items-center" method="get" action="<?php echo WEB_ROOT; ?>/index.php" style="gap: 8px;">
+                    <input type="hidden" name="nav" value="manage-verifications">
+                    <input type="hidden" name="filter" value="<?php echo htmlspecialchars($filter); ?>">
+                    <input type="hidden" name="q" value="<?php echo htmlspecialchars($q); ?>">
+                    <label for="sortBy" class="form-label mb-0" style="font-size: 0.9rem; font-weight: 500;">Sort:</label>
+                    <select id="sortBy" name="sort" class="form-select form-select-sm" style="width: 150px;" onchange="this.form.submit()">
+                        <option value="date_desc" <?php echo $sort === 'date_desc' ? 'selected' : ''; ?>>Newest First</option>
+                        <option value="date_asc" <?php echo $sort === 'date_asc' ? 'selected' : ''; ?>>Oldest First</option>
+                        <option value="name_asc" <?php echo $sort === 'name_asc' ? 'selected' : ''; ?>>Name (A-Z)</option>
+                    </select>
+                </form>
+            </div>
         </div>
 
         <div class="card-body p-0">
@@ -405,7 +431,7 @@ require_once __DIR__ . '/../public/header.php';
                 <nav aria-label="Verification pagination">
                     <ul class="pagination pagination-sm mb-0 justify-content-center">
                         <?php 
-                        $base_url = WEB_ROOT . '/index.php?nav=manage-verifications&filter=' . urlencode($filter) . '&q=' . urlencode($q);
+                        $base_url = WEB_ROOT . '/index.php?nav=manage-verifications&filter=' . urlencode($filter) . '&q=' . urlencode($q) . '&sort=' . urlencode($sort);
                         
                         // Previous button
                         if ($page > 1): ?>

@@ -50,451 +50,227 @@ if ($res) {
     }
 }
 
+// Helper to safely count results
+function user_dashboard_count($sql, $types = '', $params = [], $fallback = 0) {
+    $res = db_query($sql, $types, $params);
+    if ($res && ($row = $res->fetch_assoc()) && isset($row['cnt'])) {
+        return intval($row['cnt']);
+    }
+    return $fallback;
+}
+
+// Counts
+$pending_requests = user_dashboard_count('SELECT COUNT(*) as cnt FROM request WHERE user_id = ? AND request_status_id = 1', 'i', [$user_id]);
+$completed_requests = user_dashboard_count('SELECT COUNT(*) as cnt FROM request WHERE user_id = ? AND request_status_id = 4', 'i', [$user_id]);
+$total_complaints = user_dashboard_count('SELECT COUNT(*) as cnt FROM complaint WHERE user_id = ?', 'i', [$user_id]);
+
 require_once __DIR__ . '/../public/header.php';
 ?>
 
-<style>
-    .dashboard-stat-card {
-        background: white;
-        border-radius: 0.5rem;
-        padding: 1.5rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        border-top: 4px solid;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
+<div class="container-fluid my-4 px-3 px-md-4">
+    <div style="max-width: 1200px; margin-left: auto; margin-right: auto;">
+        <div class="mb-4">
+            <h1 class="h2 mb-1 fw-600">Welcome back<?php echo !empty($profile['first_name']) ? ', ' . htmlspecialchars($profile['first_name']) : ''; ?></h1>
+            <p class="text-muted small mb-2">Verification: <?php echo $is_verified ? '<span class="text-success fw-600">Verified</span>' : '<span class="text-danger fw-600">Not Verified</span>'; ?></p>
+            <?php if (!$is_verified): ?>
+                <div class="alert alert-warning mb-0" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Your account is not verified. Submit your ID to access all services.
+                    <a href="<?php echo WEB_ROOT; ?>/index.php?nav=profile&tab=verification" class="alert-link">Go to verification</a>
+                </div>
+            <?php endif; ?>
+        </div>
 
-    .dashboard-stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 60px;
-        height: 60px;
-        background: currentColor;
-        opacity: 0.05;
-        border-radius: 50%;
-        transform: translate(15px, -15px);
-    }
-
-    .dashboard-stat-card:hover {
-        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-        transform: translateY(-2px);
-    }
-
-    .dashboard-card {
-        background: white;
-        border-radius: 0.5rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-
-    .dashboard-card:hover {
-        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-    }
-
-    .dashboard-card-header {
-        border-bottom: 2px solid;
-        padding: 1.25rem;
-        background: linear-gradient(135deg, rgba(26, 84, 144, 0.05), rgba(26, 84, 144, 0.02));
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .dashboard-card-header h5 {
-        color: #1a5490;
-        font-weight: 700;
-        margin: 0;
-        font-size: 1.1rem;
-    }
-
-    .dashboard-card-header i {
-        font-size: 1.25rem;
-    }
-
-    .verification-badge {
-        display: inline-block;
-        padding: 0.5rem 1rem;
-        border-radius: 0.375rem;
-        font-weight: 600;
-        font-size: 0.85rem;
-    }
-
-    .verification-badge.verified {
-        background: linear-gradient(135deg, #d4edda, #c3e6cb);
-        color: #155724;
-        border: 1px solid #b1dfbb;
-    }
-
-    .verification-badge.pending {
-        background: linear-gradient(135deg, #fff3cd, #ffeeba);
-        color: #856404;
-        border: 1px solid #ffeaa7;
-    }
-
-    .stat-number {
-        font-weight: 700;
-        font-size: 2.5rem;
-        margin: 0.75rem 0 0 0;
-        line-height: 1;
-        color: #1a5490 !important;
-    }
-
-    .stat-label {
-        color: #666 !important;
-        font-size: 0.85rem;
-        margin: 0;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        display: block;
-    }
-
-    .action-btn {
-        padding: 0.875rem 1rem;
-        border-radius: 0.375rem;
-        text-decoration: none;
-        text-align: center;
-        font-weight: 600;
-        font-size: 0.9rem;
-        transition: all 0.2s ease;
-        display: block;
-        border: none;
-        cursor: pointer;
-    }
-
-    .action-btn-primary {
-        background: linear-gradient(135deg, #1a5490, #153d7a);
-        color: white;
-    }
-
-    .action-btn-primary:hover {
-        background: linear-gradient(135deg, #153d7a, #0f2a57);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(26, 84, 144, 0.3);
-    }
-
-    .action-btn-danger {
-        background: linear-gradient(135deg, #dc2626, #b91c1c);
-        color: white;
-    }
-
-    .action-btn-danger:hover {
-        background: linear-gradient(135deg, #b91c1c, #991b1b);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-    }
-
-    .action-btn-outline {
-        background: white;
-        color: #1a5490;
-        border: 2px solid #1a5490;
-    }
-
-    .action-btn-outline:hover {
-        background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(26, 84, 144, 0.2);
-    }
-
-    .request-item {
-        padding: 1rem;
-        border: 1px solid #e5e7eb;
-        border-radius: 0.375rem;
-        border-left: 4px solid #1a5490;
-        transition: all 0.2s ease;
-        display: block;
-        text-decoration: none;
-        color: inherit;
-        background: white;
-    }
-
-    .request-item:hover {
-        background: linear-gradient(135deg, #f8f9fa, #f0f1f5);
-        border-left-color: #153d7a;
-        transform: translateX(4px);
-        box-shadow: 0 2px 8px rgba(26, 84, 144, 0.1);
-    }
-
-    .request-title {
-        color: #1a5490;
-        font-weight: 600;
-        margin: 0 0 0.25rem 0;
-        font-size: 0.95rem;
-    }
-
-    .request-meta {
-        color: #999;
-        font-size: 0.85rem;
-    }
-
-    .status-badge {
-        display: inline-block;
-        padding: 0.375rem 0.75rem;
-        border-radius: 0.25rem;
-        font-size: 0.8rem;
-        font-weight: 700;
-        white-space: nowrap;
-    }
-
-    .status-pending {
-        background: linear-gradient(135deg, #fef3c7, #fde68a);
-        color: #92400e;
-        border: 1px solid #fcd34d;
-    }
-
-    .status-processing {
-        background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-        color: #1e40af;
-        border: 1px solid #93c5fd;
-    }
-
-    .status-rejected {
-        background: linear-gradient(135deg, #fee2e2, #fecaca);
-        color: #991b1b;
-        border: 1px solid #fca5a5;
-    }
-
-    .status-completed {
-        background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-        color: #166534;
-        border: 1px solid #86efac;
-    }
-
-    .announcement-item {
-        padding-bottom: 1.25rem;
-        border-bottom: 1px solid #e5e7eb;
-        transition: all 0.2s ease;
-    }
-
-    .announcement-item:last-child {
-        border-bottom: none;
-    }
-
-    .announcement-item:hover {
-        padding-left: 0.5rem;
-    }
-
-    .announcement-title {
-        color: #1a5490;
-        font-weight: 700;
-        margin: 0 0 0.5rem 0;
-        font-size: 0.95rem;
-    }
-
-    .announcement-date {
-        color: #999;
-        font-size: 0.85rem;
-    }
-
-    .complaint-item {
-        padding: 0.875rem;
-        border: 1px solid #e5e7eb;
-        border-radius: 0.375rem;
-        border-left: 4px solid #dc2626;
-        transition: all 0.2s ease;
-        background: white;
-    }
-
-    .complaint-item:hover {
-        background: linear-gradient(135deg, #fef2f2, #fee2e2);
-        transform: translateX(2px);
-        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.1);
-    }
-
-    .complaint-title {
-        color: #1a5490;
-        font-weight: 600;
-        margin: 0 0 0.25rem 0;
-        font-size: 0.85rem;
-    }
-</style>
-
-<div class="container-fluid" style="background: linear-gradient(135deg, #f8f9fa 0%, #f0f1f5 100%); min-height: 100vh; padding: 2rem 0;">
-    <div class="container">
-        <!-- Header Section -->
+        <!-- Recent Announcements -->
         <div class="mb-5">
-            <div style="border-bottom: 3px solid #1a5490; padding-bottom: 1.5rem;">
-                <h1 style="color: #1a5490; font-weight: 700; font-size: 2.25rem; margin-bottom: 0.5rem;">
-                    <i class="fas fa-home" style="margin-right: 0.75rem;"></i>Dashboard
-                </h1>
-                <p style="color: #666; margin: 0; font-size: 1rem;">Welcome back, <strong><?php echo e($profile['first_name'] ?? $_SESSION['username']); ?></strong></p>
-            </div>
-        </div>
-
-        <!-- Verification Status Alert -->
-        <?php if (!$is_verified): ?>
-            <div style="background: linear-gradient(135deg, #fff3cd, #ffeeba); border-left: 5px solid #ffc107; padding: 1.25rem; border-radius: 0.5rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);">
-                <div style="display: flex; align-items: flex-start; gap: 1rem;">
-                    <i class="fas fa-info-circle" style="color: #856404; margin-top: 0.2rem; flex-shrink: 0; font-size: 1.25rem;"></i>
-                    <div style="color: #856404; flex: 1;">
-                        <strong style="font-weight: 700; font-size: 1rem;">Verification Required</strong>
-                        <p style="margin: 0.5rem 0 0 0; font-size: 0.95rem;">Your account is awaiting verification. Status: <strong style="font-weight: 700;"><?php echo e(ucfirst($verification_status)); ?></strong></p>
-                        <p style="margin: 0.5rem 0 0.75rem 0; font-size: 0.9rem;">Complete your verification to be able to submit requests and complaints.</p>
-                        <a href="index.php?nav=profile#verification" class="btn btn-warning btn-sm" style="background: #ffc107; border-color: #ffc107; color: #856404; font-weight: 600;">
-                            <i class="fas fa-user-check me-1"></i>Go to Profile Verification
-                        </a>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-bullhorn text-success me-2"></i>
+                            <h6 class="mb-0 fw-600">Latest Announcements</h6>
+                        </div>
+                        <a href="index.php?nav=announcements" class="btn btn-sm btn-outline-success">View All</a>
                     </div>
-                </div>
-            </div>
-        <?php else: ?>
-            <div style="background: linear-gradient(135deg, #d4edda, #c3e6cb); border-left: 5px solid #28a745; padding: 1.25rem; border-radius: 0.5rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);">
-                <div style="display: flex; align-items: center; gap: 0.75rem; color: #155724; font-weight: 600;">
-                    <i class="fas fa-check-circle" style="font-size: 1.25rem;"></i>
-                    Account Verified
-                </div>
-            </div>
-        <?php endif; ?>
-
-        <!-- Announcements Section - Featured -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="dashboard-card">
-                    <div class="dashboard-card-header" style="border-bottom-color: #1a5490;">
-                        <i class="fas fa-megaphone" style="color: #1a5490;"></i>
-                        <h5>Barangay Announcements</h5>
-                    </div>
-                    <div style="padding: 1.5rem;">
-                        <?php if (count($announcements) > 0): ?>
-                            <div style="display: flex; flex-direction: column; gap: 0;">
-                                <?php foreach ($announcements as $ann): ?>
-                                    <div class="announcement-item">
-                                        <h6 class="announcement-title"><i class="fas fa-bullhorn me-2" style="color: #1a5490; font-size: 0.9rem;"></i><?php echo e($ann['title']); ?></h6>
-                                        <small class="announcement-date"><i class="fas fa-calendar-alt me-1"></i><?php echo date('F d, Y', strtotime($ann['created_at'])); ?></small>
+                    <?php if (empty($announcements)): ?>
+                        <p class="text-muted mb-0">No announcements yet.</p>
+                    <?php else: ?>
+                        <div class="list-group list-group-flush">
+                            <?php foreach ($announcements as $a): ?>
+                                <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-600"><?php echo htmlspecialchars($a['title']); ?></div>
+                                        <small class="text-muted"><?php echo date('M d, Y', strtotime($a['created_at'])); ?></small>
                                     </div>
-                                <?php endforeach; ?>
+                                    <a href="index.php?nav=announcements" class="btn btn-sm btn-outline-primary">Open</a>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick stats -->
+        <div class="mb-5">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100" style="border-top:3px solid #ffc107;">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h2 class="h1 mb-0 text-warning"><?php echo $pending_requests; ?></h2>
+                                <i class="fas fa-hourglass-half text-warning opacity-10" style="font-size:2.5rem;"></i>
                             </div>
-                        <?php else: ?>
-                            <p style="color: #999; text-align: center; margin: 1.5rem 0;">No announcements from your barangay at the moment.</p>
-                        <?php endif; ?>
+                            <p class="text-muted small mb-3 fw-600">Pending Requests</p>
+                            <a href="index.php?nav=manage-requests" class="btn btn-sm btn-warning w-100">Track</a>
+                        </div>
                     </div>
-                    <div style="border-top: 1px solid #e5e7eb; padding: 1rem 1.5rem; background: linear-gradient(135deg, rgba(26, 84, 144, 0.03), transparent);">
-                        <a href="index.php?nav=announcements" style="color: #1a5490; text-decoration: none; font-weight: 700; font-size: 0.9rem;"><i class="fas fa-arrow-right me-1"></i>View All Announcements</a>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100" style="border-top:3px solid #198754;">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h2 class="h1 mb-0 text-success">
+                                    <?php echo $completed_requests; ?>
+                                </h2>
+                                <i class="fas fa-check-circle text-success opacity-10" style="font-size:2.5rem;"></i>
+                            </div>
+                            <p class="text-muted small mb-3 fw-600">Completed Requests</p>
+                            <a href="index.php?nav=manage-requests" class="btn btn-sm btn-success w-100">View</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100" style="border-top:3px solid #fd7e14;">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h2 class="h1 mb-0" style="color:#fd7e14;">
+                                    <?php echo $total_complaints; ?>
+                                </h2>
+                                <i class="fas fa-comments opacity-10" style="color:#fd7e14; font-size:2.5rem;"></i>
+                            </div>
+                            <p class="text-muted small mb-3 fw-600">My Complaints</p>
+                            <a href="index.php?nav=complaint-list" class="btn btn-sm w-100" style="background-color:#fd7e14; border-color:#fd7e14; color:white;">Manage</a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Stats Cards Row - Simplified (3 cards) -->
-        <div class="row mb-4 g-3">
-            <div class="col-md-4">
-                <div class="dashboard-stat-card" style="border-top-color: #1a5490;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 1;">
-                        <div>
-                            <p class="stat-label">Total Requests</p>
-                            <h2 class="stat-number" style="color: #1a5490;"><?php echo db_query('SELECT COUNT(*) as cnt FROM request WHERE user_id = ?', 'i', [$user_id])->fetch_assoc()['cnt'] ?? 0; ?></h2>
-                        </div>
-                        <i class="fas fa-file-alt" style="font-size: 2rem; opacity: 0.15;"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="dashboard-stat-card" style="border-top-color: #f59e0b;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 1;">
-                        <div>
-                            <p class="stat-label">Pending Requests</p>
-                            <h2 class="stat-number" style="color: #f59e0b;"><?php echo db_query('SELECT COUNT(*) as cnt FROM request WHERE user_id = ? AND request_status_id = 1', 'i', [$user_id])->fetch_assoc()['cnt'] ?? 0; ?></h2>
-                        </div>
-                        <i class="fas fa-clock" style="font-size: 2rem; opacity: 0.15;"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="dashboard-stat-card" style="border-top-color: #28a745;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 1;">
-                        <div>
-                            <p class="stat-label">Verification Status</p>
-                            <div style="margin-top: 0.5rem;">
-                                <?php if ($is_verified): ?>
-                                    <span class="verification-badge verified"><i class="fas fa-check me-1"></i>Verified</span>
-                                <?php else: ?>
-                                    <span class="verification-badge pending"><i class="fas fa-clock me-1"></i>Pending</span>
-                                <?php endif; ?>
+        <!-- Recent Requests and Complaints -->
+        <div class="mb-5">
+            <div class="row g-4">
+                <!-- Recent Requests -->
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-list-ul text-primary me-2"></i>
+                                <h6 class="mb-0 fw-600">Recent Requests</h6>
                             </div>
-                        </div>
-                        <i class="fas fa-shield-alt" style="font-size: 2rem; opacity: 0.15;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Recent Requests Section -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="dashboard-card">
-                    <div class="dashboard-card-header" style="border-bottom-color: #1a5490;">
-                        <i class="fas fa-file-alt" style="color: #1a5490;"></i>
-                        <h5>Recent Requests</h5>
-                    </div>
-                    <div style="padding: 1.5rem;">
-                        <?php if (count($recent_requests) > 0): ?>
-                            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                                <?php foreach ($recent_requests as $req): ?>
-                                    <a href="index.php?nav=request-ticket&id=<?php echo $req['id']; ?>" class="request-item">
-                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <?php if (empty($recent_requests)): ?>
+                                <p class="text-muted mb-0">No recent requests.</p>
+                            <?php else: ?>
+                                <div class="list-group list-group-flush">
+                                    <?php foreach ($recent_requests as $req): ?>
+                                        <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
                                             <div>
-                                                <h6 class="request-title"><?php echo e($req['doc_type']); ?></h6>
-                                                <small class="request-meta">Request ID: <?php echo $req['id']; ?></small>
+                                                <div class="fw-600"><?php echo htmlspecialchars($req['doc_type'] ?? 'Document'); ?></div>
+                                                <small class="text-muted"><?php echo htmlspecialchars($req['status_name'] ?? ''); ?></small>
                                             </div>
-                                            <span class="status-badge status-<?php $status_id = intval($req['request_status_id']); echo $status_id === 1 ? 'pending' : ($status_id === 2 ? 'processing' : ($status_id === 3 ? 'rejected' : 'completed')); ?>">
-                                                <?php echo e($req['status_name']); ?>
-                                            </span>
+                                            <a href="index.php?nav=request-ticket&id=<?php echo $req['id']; ?>" class="btn btn-sm btn-outline-primary">View</a>
                                         </div>
-                                    </a>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php else: ?>
-                            <p style="color: #999; text-align: center; margin: 1.5rem 0;">No requests yet. <a href="index.php?nav=create-request" style="color: #1a5490; text-decoration: none; font-weight: 700;">Create one now</a></p>
-                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                    <div style="border-top: 1px solid #e5e7eb; padding: 1rem 1.5rem; background: linear-gradient(135deg, rgba(26, 84, 144, 0.03), transparent);">
-                        <a href="index.php?nav=request-list" style="color: #1a5490; text-decoration: none; font-weight: 700; font-size: 0.9rem;"><i class="fas fa-arrow-right me-1"></i>View All Requests</a>
+                </div>
+
+                <!-- Recent Complaints -->
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-exclamation-circle text-danger me-2"></i>
+                                <h6 class="mb-0 fw-600">Recent Complaints</h6>
+                            </div>
+                            <?php if (empty($recent_complaints)): ?>
+                                <p class="text-muted mb-0">No recent complaints.</p>
+                            <?php else: ?>
+                                <div class="list-group list-group-flush">
+                                    <?php foreach ($recent_complaints as $comp): ?>
+                                        <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <div class="fw-600"><?php echo htmlspecialchars($comp['title'] ?? 'Complaint'); ?></div>
+                                                <small class="text-muted"><?php echo htmlspecialchars($comp['status_name'] ?? ''); ?></small>
+                                            </div>
+                                            <a href="index.php?nav=complaint-list" class="btn btn-sm btn-outline-primary">View</a>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Recent Complaints Section -->
-        <div class="row g-3">
-            <div class="col-12">
-                <div class="dashboard-card">
-                    <div class="dashboard-card-header" style="border-bottom-color: #dc2626;">
-                        <i class="fas fa-exclamation-triangle" style="color: #dc2626;"></i>
-                        <h5 style="color: #dc2626;">My Complaints</h5>
-                    </div>
-                    <div style="padding: 1.5rem;">
-                        <?php if (count($recent_complaints) > 0): ?>
-                            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                                <?php foreach ($recent_complaints as $comp): ?>
-                                    <div class="complaint-item">
-                                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                                            <div>
-                                                <h6 class="complaint-title"><?php echo e(substr($comp['title'], 0, 60)); ?><?php echo strlen($comp['title']) > 60 ? '...' : ''; ?></h6>
-                                                <small class="request-meta">Complaint ID: <?php echo $comp['id']; ?></small>
-                                            </div>
-                                            <span class="status-badge status-<?php $status_id = intval($comp['complaint_status_id']); echo $status_id === 1 ? 'pending' : ($status_id === 2 ? 'processing' : ($status_id === 3 ? 'rejected' : 'completed')); ?>">
-                                                <?php echo e($comp['status_name']); ?>
-                                            </span>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
+        <!-- Actions -->
+        <div class="mb-5">
+            <h6 class="text-muted fw-600 mb-3">Quick Actions</h6>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <a href="index.php?nav=create-request" class="card border-0 text-decoration-none text-dark h-100 hover-card-link">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-plus-circle text-primary me-3"></i>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Create Request</h6>
+                                    <small class="text-muted">Start a new document request</small>
+                                </div>
+                                <i class="fas fa-chevron-right text-muted small"></i>
                             </div>
-                        <?php else: ?>
-                            <p style="color: #999; text-align: center; margin: 1.5rem 0;">No complaints filed. <?php if ($is_verified): ?><a href="index.php?nav=complaint-list" style="color: #dc2626; text-decoration: none; font-weight: 700;">File one if needed</a><?php endif; ?></p>
-                        <?php endif; ?>
-                    </div>
-                    <div style="border-top: 1px solid #e5e7eb; padding: 1rem 1.5rem; background: linear-gradient(135deg, rgba(220, 38, 38, 0.03), transparent);">
-                        <a href="index.php?nav=complaint-list" style="color: #dc2626; text-decoration: none; font-weight: 700; font-size: 0.9rem;"><i class="fas fa-arrow-right me-1"></i>View All Complaints</a>
-                    </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="index.php?nav=manage-requests" class="card border-0 text-decoration-none text-dark h-100 hover-card-link">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-file-alt text-warning me-3"></i>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">My Requests</h6>
+                                    <small class="text-muted">Track status</small>
+                                </div>
+                                <i class="fas fa-chevron-right text-muted small"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="index.php?nav=complaint-list" class="card border-0 text-decoration-none text-dark h-100 hover-card-link">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-comments text-info me-3"></i>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">My Complaints</h6>
+                                    <small class="text-muted">View and follow-up</small>
+                                </div>
+                                <i class="fas fa-chevron-right text-muted small"></i>
+                            </div>
+                        </div>
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<style>
+    .fw-600 { font-weight: 600; }
+    .hover-card-link { transition: all 0.2s ease; border: 1px solid #e9ecef; }
+    .hover-card-link:hover { background-color: #f8f9fa !important; border-color: #dee2e6; }
+</style>
+
 <?php require_once __DIR__ . '/../public/footer.php'; ?>
+                        <div class="card-body p-3">

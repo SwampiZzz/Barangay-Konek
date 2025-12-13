@@ -33,7 +33,7 @@ $pages = [
     // User pages
     'user-dashboard' => ['file' => 'pages/user-dashboard.php', 'roles' => [ROLE_USER]],
     'create-request' => ['file' => 'pages/create-request.php', 'roles' => [ROLE_USER], 'require_verification' => true],
-    'request-list' => ['file' => 'pages/request-list.php', 'roles' => [ROLE_USER], 'require_verification' => true],
+    'manage-requests' => ['file' => 'pages/manage-requests.php', 'roles' => [ROLE_USER, ROLE_STAFF, ROLE_ADMIN, ROLE_SUPERADMIN], 'require_verification' => true],
     'request-ticket' => ['file' => 'pages/request-ticket.php', 'roles' => [ROLE_USER], 'require_verification' => true],
     'complaint-list' => ['file' => 'pages/complaint-list.php', 'roles' => [ROLE_USER], 'require_verification' => true],
     'profile' => ['file' => 'pages/profile.php', 'roles' => [ROLE_USER, ROLE_STAFF, ROLE_ADMIN, ROLE_SUPERADMIN]],
@@ -47,7 +47,7 @@ $pages = [
     // Admin pages
     'admin-dashboard' => ['file' => 'pages/admin-dashboard.php', 'roles' => [ROLE_ADMIN]],
     'manage-verifications' => ['file' => 'pages/manage-verifications.php', 'roles' => [ROLE_ADMIN]],
-    'manage-users' => ['file' => 'pages/manage-users.php', 'roles' => [ROLE_ADMIN]],
+    'manage-users' => ['file' => 'pages/manage-users.php', 'roles' => [ROLE_ADMIN, ROLE_STAFF]],
     'barangay-overview' => ['file' => 'pages/barangay-overview.php', 'roles' => [ROLE_ADMIN]],
     'activity-logs' => ['file' => 'pages/activity-logs.php', 'roles' => [ROLE_ADMIN]],
     

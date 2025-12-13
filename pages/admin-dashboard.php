@@ -7,9 +7,9 @@ require_role([ROLE_ADMIN]);
 
 $pageTitle = 'Admin Dashboard';
 
-// Get admin's barangay
+// Get admin's barangay (from profile table)
 $user_id = current_user_id();
-$barangay_res = db_query('SELECT id, name FROM barangay WHERE admin_user_id = ?', 'i', [$user_id]);
+$barangay_res = db_query('SELECT b.id, b.name FROM barangay b JOIN profile p ON b.id = p.barangay_id WHERE p.user_id = ?', 'i', [$user_id]);
 $barangay = $barangay_res ? $barangay_res->fetch_assoc() : null;
 $barangay_id = $barangay['id'] ?? null;
 
@@ -20,6 +20,17 @@ $open_complaints = db_query('SELECT COUNT(*) as cnt FROM complaint WHERE complai
 $total_residents = db_query('SELECT COUNT(*) as cnt FROM users WHERE usertype_id = 4 AND id IN (SELECT user_id FROM profile WHERE barangay_id = ?)', 'i', [$barangay_id])->fetch_assoc()['cnt'] ?? 0;
 $total_staff = db_query('SELECT COUNT(*) as cnt FROM users WHERE usertype_id = 3 AND id IN (SELECT user_id FROM profile WHERE barangay_id = ?)', 'i', [$barangay_id])->fetch_assoc()['cnt'] ?? 0;
 $total_requests = db_query('SELECT COUNT(*) as cnt FROM request WHERE user_id IN (SELECT id FROM users WHERE id IN (SELECT user_id FROM profile WHERE barangay_id = ?))', 'i', [$barangay_id])->fetch_assoc()['cnt'] ?? 0;
+
+// Fetch recent announcements
+$announcements = [];
+if ($barangay_id) {
+    $ann_res = db_query('SELECT id, title, created_at FROM announcement WHERE barangay_id = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 5', 'i', [$barangay_id]);
+    if ($ann_res) {
+        while ($row = $ann_res->fetch_assoc()) {
+            $announcements[] = $row;
+        }
+    }
+}
 
 require_once __DIR__ . '/../public/header.php';
 ?>
@@ -53,16 +64,16 @@ require_once __DIR__ . '/../public/header.php';
                     </div>
                 </div>
 
-                <!-- Pending Requests -->
+                <!-- Requests to Review -->
                 <div class="col-md-4">
-                    <div class="card border-0 shadow-sm h-100" style="border-top: 3px solid #ffc107; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.boxShadow='0 0.5rem 1rem rgba(0, 0, 0, 0.1)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='0 0.125rem 0.25rem rgba(0, 0, 0, 0.075)'; this.style.transform='translateY(0)'">
+                    <div class="card border-0 shadow-sm h-100" style="border-top: 3px solid #0dcaf0; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.boxShadow='0 0.5rem 1rem rgba(0, 0, 0, 0.1)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='0 0.125rem 0.25rem rgba(0, 0, 0, 0.075)'; this.style.transform='translateY(0)'">
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h2 class="h1 mb-0 text-warning"><?php echo $pending_requests; ?></h2>
-                                <i class="fas fa-file-alt text-warning opacity-10" style="font-size: 2.5rem;"></i>
+                                <h2 class="h1 mb-0 text-info"><?php echo $pending_requests; ?></h2>
+                                <i class="fas fa-file-alt text-info opacity-10" style="font-size: 2.5rem;"></i>
                             </div>
-                            <p class="text-muted small mb-3" style="font-weight: 600;">Requests Pending</p>
-                            <a href="index.php?nav=manage-requests&filter=pending" class="btn btn-sm btn-warning w-100">Process</a>
+                            <p class="text-muted small mb-3" style="font-weight: 600;">Requests to Review</p>
+                            <a href="index.php?nav=manage-requests&filter=pending" class="btn btn-sm btn-info w-100">Review</a>
                         </div>
                     </div>
                 </div>
@@ -117,6 +128,36 @@ require_once __DIR__ . '/../public/header.php';
                             <h4 class="mb-0"><?php echo $total_staff; ?></h4>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Announcements -->
+        <div class="mb-5">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-bullhorn text-success me-2"></i>
+                            <h6 class="mb-0 fw-600">Recent Announcements</h6>
+                        </div>
+                        <a href="index.php?nav=manage-announcements" class="btn btn-sm btn-outline-success">View</a>
+                    </div>
+                    <?php if (empty($announcements)): ?>
+                        <p class="text-muted mb-0">No announcements yet. <a href="index.php?nav=manage-announcements" class="text-success fw-600">Create one now</a></p>
+                    <?php else: ?>
+                        <div class="list-group list-group-flush">
+                            <?php foreach ($announcements as $a): ?>
+                                <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-600"><?php echo htmlspecialchars($a['title']); ?></div>
+                                        <small class="text-muted"><?php echo date('M d, Y', strtotime($a['created_at'])); ?></small>
+                                    </div>
+                                    <a href="index.php?nav=manage-announcements" class="btn btn-sm btn-outline-primary">Edit</a>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

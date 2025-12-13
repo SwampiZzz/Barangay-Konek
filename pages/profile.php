@@ -157,7 +157,8 @@ $vres = db_query('SELECT v.*, vs.name as status_name FROM user_verification v LE
 if ($vres) $verification = $vres->fetch_assoc();
 
 // Check if user is verified (status_id = 2 means verified)
-$is_verified = !empty($verification['verification_status_id']) && $verification['verification_status_id'] == 2;
+// Admins can edit profile even if not verified
+$is_verified = !empty($verification['verification_status_id']) && $verification['verification_status_id'] == 2 && $role === ROLE_USER;
 
 // Clean up invalid birthdates (0000-00-00)
 if (!empty($profile['birthdate']) && ($profile['birthdate'] === '0000-00-00' || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $profile['birthdate']))) {
@@ -489,7 +490,7 @@ require_once __DIR__ . '/../public/header.php';
                     <hr class="my-4">
                     
                     <h5 class="mb-3"><i class="fas fa-user-edit me-2"></i>Personal Information</h5>
-                    <?php if ($is_verified): ?>
+                    <?php if ($is_verified && $role === ROLE_USER): ?>
                         <div class="alert alert-info alert-dismissible fade show mb-3" role="alert">
                             <i class="fas fa-lock me-2"></i>
                             <strong>Account Verified:</strong> Your account has been verified. You can only edit your email address and contact number. Other personal information is locked.
@@ -501,24 +502,24 @@ require_once __DIR__ . '/../public/header.php';
                         <div class="row g-3">
                             <div class="col-md-3">
                                 <label class="form-label">First Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="first_name" value="<?php echo e($profile['first_name'] ?? ''); ?>" placeholder="Juan" required <?php if ($is_verified) echo 'disabled'; ?>>
+                                <input type="text" class="form-control" name="first_name" value="<?php echo e($profile['first_name'] ?? ''); ?>" placeholder="Juan" required <?php if ($is_verified && $role === ROLE_USER) echo 'disabled'; ?>>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Middle Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="middle_name" value="<?php echo e($profile['middle_name'] ?? ''); ?>" placeholder="Cruz" required <?php if ($is_verified) echo 'disabled'; ?>>
+                                <input type="text" class="form-control" name="middle_name" value="<?php echo e($profile['middle_name'] ?? ''); ?>" placeholder="Cruz" required <?php if ($is_verified && $role === ROLE_USER) echo 'disabled'; ?>>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Last Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="last_name" value="<?php echo e($profile['last_name'] ?? ''); ?>" placeholder="Dela Cruz" required <?php if ($is_verified) echo 'disabled'; ?>>
+                                <input type="text" class="form-control" name="last_name" value="<?php echo e($profile['last_name'] ?? ''); ?>" placeholder="Dela Cruz" required <?php if ($is_verified && $role === ROLE_USER) echo 'disabled'; ?>>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Suffix</label>
-                                <input type="text" class="form-control" name="suffix" value="<?php echo e($profile['suffix'] ?? ''); ?>" placeholder="Jr., Sr., III" <?php if ($is_verified) echo 'disabled'; ?>>
+                                <input type="text" class="form-control" name="suffix" value="<?php echo e($profile['suffix'] ?? ''); ?>" placeholder="Jr., Sr., III" <?php if ($is_verified && $role === ROLE_USER) echo 'disabled'; ?>>
                                 <div class="form-text">Optional</div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Sex <span class="text-danger">*</span></label>
-                                <select class="form-select" name="sex_id" required <?php if ($is_verified) echo 'disabled'; ?>>
+                                <select class="form-select" name="sex_id" required <?php if ($is_verified && $role === ROLE_USER) echo 'disabled'; ?>>
                                     <option value="">Select Gender</option>
                                     <option value="1" <?php if (($profile['sex_id'] ?? null) == 1) echo 'selected'; ?>>Male</option>
                                     <option value="2" <?php if (($profile['sex_id'] ?? null) == 2) echo 'selected'; ?>>Female</option>
@@ -526,7 +527,7 @@ require_once __DIR__ . '/../public/header.php';
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Birthdate <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" name="birthdate" value="<?php echo e($profile['birthdate'] ?? ''); ?>" max="<?php echo date('Y-m-d'); ?>" required <?php if ($is_verified) echo 'disabled'; ?>>
+                                <input type="date" class="form-control" name="birthdate" value="<?php echo e($profile['birthdate'] ?? ''); ?>" max="<?php echo date('Y-m-d'); ?>" required <?php if ($is_verified && $role === ROLE_USER) echo 'disabled'; ?>>
                             </div>
                             <div class="col-md-12">
                                 <label class="form-label">Barangay</label>
@@ -621,7 +622,15 @@ require_once __DIR__ . '/../public/header.php';
                     </form>
                 </div>
                 <!-- Verification Tab -->
-                <div class="tab-pane fade" id="verification" role="tabpanel">
+                <div class="tab-pane fade position-relative" id="verification" role="tabpanel" style="z-index: 0;">
+                    <?php if ($role === ROLE_ADMIN): ?>
+                        <div class="position-absolute top-0 start-0 w-100 d-flex justify-content-center" style="pointer-events: none; z-index: 2;">
+                            <div class="alert alert-info mt-3" role="alert" style="pointer-events: auto; filter: none; z-index: 3;">
+                                <i class="fas fa-info-circle me-2"></i>
+                                As an administrator, you do not need to verify your account. Verification is only required for resident users.
+                            </div>
+                        </div>
+                    <?php endif; ?>
                     <?php if (!empty($alert_message) && $alert_tab === 'verification'): ?>
                         <div class="alert alert-<?php echo $alert_type; ?> alert-dismissible fade show mb-4" role="alert">
                             <?php if ($alert_type === 'success'): ?>
@@ -632,6 +641,12 @@ require_once __DIR__ . '/../public/header.php';
                             <?php echo htmlspecialchars($alert_message); ?>
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
+                    <?php endif; ?>
+                    <?php if ($role === ROLE_ADMIN): ?>
+                        <div class="position-absolute top-0 start-0 w-100" styl="height: 100%; background: rgba(0,0,0,0.08); z-index: 1; margin-top: 3.5rem;"></div>
+                        <div class="verification-content" style="filter: blur(20px); pointer-events: none; margin-top: 4rem; position: relative; z-index: 0;">
+                    <?php else: ?>
+                        <div class="verification-content" style="position: relative; z-index: 1;">
                     <?php endif; ?>
                     
                     <div class="row mb-4">
@@ -715,6 +730,21 @@ require_once __DIR__ . '/../public/header.php';
                             
                             <!-- Document Upload Form (visible for unverified users) -->
                             <?php if ($verification_status_id != 2): ?>
+                                <!-- Important Notice -->
+                                <div class="alert alert-info mb-4">
+                                    <h6 class="alert-heading"><i class="fas fa-exclamation-circle me-2"></i>Important: Profile Information Must Match Your Document</h6>
+                                    <p class="mb-2">Before submitting your verification document, please ensure that:</p>
+                                    <ul class="mb-2">
+                                        <li>Your <strong>Full Name</strong> (First, Middle, Last) matches exactly as shown in your document</li>
+                                        <li>Your <strong>Birthdate</strong> matches the date on your document</li>
+                                        <li>All other personal information is accurate and up-to-date</li>
+                                    </ul>
+                                    <p class="mb-0">
+                                        <i class="fas fa-edit me-1"></i>
+                                        <a href="<?php echo WEB_ROOT; ?>/index.php?nav=profile&tab=profile" class="alert-link">Click here to edit your profile</a> if any information needs to be corrected.
+                                    </p>
+                                </div>
+                                
                                 <div class="card">
                                     <div class="card-header bg-light">
                                         <h6 class="mb-0"><i class="fas fa-file-upload me-2"></i>
@@ -836,8 +866,9 @@ require_once __DIR__ . '/../public/header.php';
                         </div>
                     </div>
                 </div>
+                </div>
                 <!-- Delete Account Tab -->
-                <div class="tab-pane fade" id="delete" role="tabpanel">
+                <div class="tab-pane fade" id="delete" role="tabpanel" style="min-height: 500px;">
                     <?php if (!empty($alert_message) && $alert_tab === 'delete'): ?>
                         <div class="alert alert-<?php echo $alert_type; ?> alert-dismissible fade show mb-4" role="alert">
                             <?php if ($alert_type === 'success'): ?>
@@ -850,90 +881,90 @@ require_once __DIR__ . '/../public/header.php';
                         </div>
                     <?php endif; ?>
                     
-                    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-                                <h5 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Danger Zone</h5>
-                                <p class="mb-2">Deleting your account is a <strong>permanent action</strong> that cannot be undone. Once deleted:</p>
-                                <ul class="mb-3">
-                                    <li>You will immediately be logged out</li>
-                                    <li>All your personal information will be marked as deleted</li>
-                                    <li>Your account cannot be recovered</li>
-                                    <li>You will need to create a new account to access the system again</li>
-                                </ul>
-                                <p class="mb-0 small text-muted">Please ensure you have saved any important information before proceeding.</p>
-                            </div>
-                            
-                            <div class="card border-danger">
-                                <div class="card-header bg-danger text-white">
-                                    <h6 class="mb-0"><i class="fas fa-trash me-2"></i>Delete Account</h6>
-                                </div>
-                                <div class="card-body">
-                                    <p class="text-muted mb-4">To delete your account, please enter your password below and confirm your decision:</p>
-                                    
-                                    <form id="deleteAccountForm" method="post" action="#">
-                                        <div class="mb-4">
-                                            <label class="form-label">Current Password <span class="text-danger">*</span></label>
-                                            <input type="password" class="form-control" name="delete_password" placeholder="Enter your password" required>
-                                            <div class="form-text">Your password is required to verify this request</div>
-                                        </div>
-                                        
-                                        <div class="mb-4">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="confirmDelete" required>
-                                                <label class="form-check-label" for="confirmDelete">
-                                                    I understand that deleting my account is permanent and cannot be undone
-                                                </label>
-                                            </div>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="confirmDataLoss" required>
-                                                <label class="form-check-label" for="confirmDataLoss">
-                                                    I have saved all important information and accept data loss
-                                                </label>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="mt-4 d-flex gap-2 justify-content-end">
-                                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('confirmDelete').checked = false; document.getElementById('confirmDataLoss').checked = false;">
-                                                Cancel
-                                            </button>
-                                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" id="deleteBtn">
-                                                <i class="fas fa-trash me-2"></i>Delete My Account
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="alert alert-danger mb-4" role="alert">
+                        <h5 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Danger Zone</h5>
+                        <p class="mb-2">Deleting your account is a <strong>permanent action</strong> that cannot be undone. Once deleted:</p>
+                        <ul class="mb-3">
+                            <li>You will immediately be logged out</li>
+                            <li>All your personal information will be marked as deleted</li>
+                            <li>Your account cannot be recovered</li>
+                            <li>You will need to create a new account to access the system again</li>
+                        </ul>
+                        <p class="mb-0 small text-muted">Please ensure you have saved any important information before proceeding.</p>
                     </div>
                     
-                    <!-- Confirmation Modal -->
-                    <div class="modal fade" id="confirmDeleteModal" tabindex="-1">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content border-danger">
-                                <div class="modal-header bg-danger text-white">
-                                    <h5 class="modal-title"><i class="fas fa-exclamation-circle me-2"></i>Confirm Account Deletion</h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="card border-danger">
+                        <div class="card-header bg-danger text-white">
+                            <h6 class="mb-0"><i class="fas fa-trash me-2"></i>Delete Account</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted mb-4">To delete your account, please enter your password below and confirm your decision:</p>
+                            
+                            <form id="deleteAccountForm" method="post" action="#">
+                                <div class="mb-4">
+                                    <label class="form-label">Current Password <span class="text-danger">*</span></label>
+                                    <input type="password" class="form-control" name="delete_password" placeholder="Enter your password" required>
+                                    <div class="form-text">Your password is required to verify this request</div>
                                 </div>
-                                <div class="modal-body">
-                                    <p class="mb-3"><strong>This action cannot be undone!</strong></p>
-                                    <p class="mb-3">You are about to permanently delete your account. This will:</p>
-                                    <ul class="mb-3">
-                                        <li>Log you out immediately</li>
-                                        <li>Delete all your data</li>
-                                        <li>Prevent you from logging in again</li>
-                                    </ul>
-                                    <p class="mb-0 text-muted"><small>Type <strong>"DELETE"</strong> below to confirm:</small></p>
-                                    <div class="mt-2 mb-3">
-                                        <input type="text" class="form-control form-control-lg text-uppercase text-center" id="deleteConfirmText" placeholder="Type DELETE to confirm" maxlength="6">
+                                
+                                <div class="mb-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="confirmDelete" required>
+                                        <label class="form-check-label" for="confirmDelete">
+                                            I understand that deleting my account is permanent and cannot be undone
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="confirmDataLoss" required>
+                                        <label class="form-check-label" for="confirmDataLoss">
+                                            I have saved all important information and accept data loss
+                                        </label>
                                     </div>
                                 </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn" disabled>
-                                        <i class="fas fa-trash me-2"></i>Permanently Delete Account
+                                
+                                <div class="mt-4 d-flex gap-2 justify-content-end">
+                                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('confirmDelete').checked = false; document.getElementById('confirmDataLoss').checked = false;">
+                                        Cancel
+                                    </button>
+                                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" id="deleteBtn">
+                                        <i class="fas fa-trash me-2"></i>Delete My Account
                                     </button>
                                 </div>
-                            </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-exclamation-circle me-2"></i>Confirm Account Deletion</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3"><strong>This action cannot be undone!</strong></p>
+                <p class="mb-3">You are about to permanently delete your account. This will:</p>
+                <ul class="mb-3">
+                    <li>Log you out immediately</li>
+                    <li>Delete all your data</li>
+                    <li>Prevent you from logging in again</li>
+                </ul>
+                <p class="mb-0 text-muted"><small>Type <strong>"DELETE"</strong> below to confirm:</small></p>
+                <div class="mt-2 mb-3">
+                    <input type="text" class="form-control form-control-lg text-uppercase text-center" id="deleteConfirmText" placeholder="Type DELETE to confirm" maxlength="6">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn" disabled>
+                    <i class="fas fa-trash me-2"></i>Permanently Delete Account
+                </button>
             </div>
         </div>
     </div>
@@ -966,8 +997,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Ensure Bootstrap is fully loaded before creating tab instance
         if (typeof bootstrap !== 'undefined') {
             try {
+                console.log('Switching to tab:', tabParam || window.location.hash);
                 const tab = new bootstrap.Tab(targetTab);
                 tab.show();
+                console.log('Tab shown successfully');
                 
                 // Scroll to the tab content with a slight delay to ensure tab is switched
                 setTimeout(() => {

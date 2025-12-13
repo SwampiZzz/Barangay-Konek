@@ -5,9 +5,30 @@ $user_id = intval($_SESSION['user_id'] ?? 0);
 
 // Check if user is verified (only matters for regular users)
 $is_verified = true;
+$barangay_info = ['barangay_name' => '', 'city_name' => '', 'province_name' => ''];
 if ($role === ROLE_USER && $user_id > 0) {
     require_once __DIR__ . '/../config.php';
     $is_verified = is_user_verified($user_id);
+} elseif (($role === ROLE_ADMIN || $role === ROLE_STAFF) && $user_id > 0) {
+    require_once __DIR__ . '/../config.php';
+}
+
+// Get user's location info (barangay, municipality, province)
+if ($user_id > 0) {
+    require_once __DIR__ . '/../config.php';
+    $loc_res = db_query('SELECT b.name as barangay_name, c.name as city_name, p.name as province_name 
+                        FROM profile pr 
+                        LEFT JOIN barangay b ON pr.barangay_id = b.id 
+                        LEFT JOIN city c ON b.city_id = c.id 
+                        LEFT JOIN province p ON c.province_id = p.id 
+                        WHERE pr.user_id = ?', 'i', [$user_id]);
+    if ($loc_res && ($loc_row = $loc_res->fetch_assoc())) {
+        $barangay_info = [
+            'barangay_name' => $loc_row['barangay_name'] ?? '',
+            'city_name' => $loc_row['city_name'] ?? '',
+            'province_name' => $loc_row['province_name'] ?? ''
+        ];
+    }
 }
 
 // Get profile picture
@@ -67,7 +88,7 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
                 <?php if ($role === ROLE_USER): ?>
                     <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=user-dashboard">Dashboard</a></li>
                     <li class="nav-item">
-                        <a class="nav-link py-2 <?php echo !$is_verified ? 'disabled' : ''; ?>" href="<?php echo $is_verified ? WEB_ROOT . '/index.php?nav=request-list' : '#'; ?>" <?php echo !$is_verified ? 'style="cursor: not-allowed; opacity: 0.6;" title="Verify your account to access requests"' : ''; ?>>Requests</a>
+                        <a class="nav-link py-2 <?php echo !$is_verified ? 'disabled' : ''; ?>" href="<?php echo $is_verified ? WEB_ROOT . '/index.php?nav=manage-requests' : '#'; ?>" <?php echo !$is_verified ? 'style="cursor: not-allowed; opacity: 0.6;" title="Verify your account to access requests"' : ''; ?>>Requests</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link py-2 <?php echo !$is_verified ? 'disabled' : ''; ?>" href="<?php echo $is_verified ? WEB_ROOT . '/index.php?nav=complaint-list' : '#'; ?>" <?php echo !$is_verified ? 'style="cursor: not-allowed; opacity: 0.6;" title="Verify your account to access complaints"' : ''; ?>>Complaints</a>
@@ -75,15 +96,16 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
                     <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=announcements">Announcements</a></li>
                 <?php elseif ($role === ROLE_STAFF): ?>
                     <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=staff-dashboard">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-requests">Manage Requests</a></li>
-                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-complaints">Manage Complaints</a></li>
+                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-users">Users</a></li>
+                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-requests">Requests</a></li>
+                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-complaints">Complaints</a></li>
                     <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=announcements">Announcements</a></li>
                 <?php elseif ($role === ROLE_ADMIN): ?>
                     <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=admin-dashboard">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-users">Manage Users</a></li>
-                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-verifications">Manage Verifications</a></li>
-                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-requests">Manage Requests</a></li>
-                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-complaints">Manage Complaints</a></li>
+                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-users">Users</a></li>
+                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-verifications">Verifications</a></li>
+                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-requests">Requests</a></li>
+                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=manage-complaints">Complaints</a></li>
                     <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=announcements">Announcements</a></li>
                 <?php elseif ($role === ROLE_SUPERADMIN): ?>
                     <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=superadmin-dashboard">Dashboard</a></li>
@@ -92,6 +114,18 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
                     <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=activity-logs">Activity Logs</a></li>
                 <?php endif; ?>
             </ul>
+            <?php if (!empty($barangay_info['barangay_name'])): ?>
+            <div class="navbar-text ms-auto text-muted small" style="font-size: 0.85rem;">
+                <i class="fas fa-map-marker-alt me-1"></i>
+                <span class="fw-600"><?php echo htmlspecialchars($barangay_info['barangay_name']); ?></span>
+                <?php if (!empty($barangay_info['city_name'])): ?>
+                    <span class="text-muted"> • <?php echo htmlspecialchars($barangay_info['city_name']); ?></span>
+                <?php endif; ?>
+                <?php if (!empty($barangay_info['province_name'])): ?>
+                    <span class="text-muted">, <?php echo htmlspecialchars($barangay_info['province_name']); ?></span>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
 </nav>
