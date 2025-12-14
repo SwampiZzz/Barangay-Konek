@@ -542,3 +542,300 @@ footer {
         padding-right: 1rem;
     }
 }
+
+/* File Upload Zones */
+.upload-zone {
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    background-color: #f9fafb;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 0.75rem;
+}
+
+.upload-zone:hover {
+    border-color: #0b3d91;
+    background-color: #f0f4f8;
+}
+
+.upload-zone.dragover {
+    border-color: #0b3d91;
+    background-color: #e8f0ff;
+    box-shadow: 0 0 0 3px rgba(11, 61, 145, 0.1);
+}
+
+.upload-zone i {
+    font-size: 2.5rem;
+    color: #9ca3af;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.upload-zone.dragover i {
+    color: #0b3d91;
+}
+
+.file-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background-color: #f9fafb;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.file-item-row:hover {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.file-item-row i {
+    margin-right: 0.5rem;
+    font-size: 1rem;
+}
+
+/* Form Select Improvements */
+.form-select {
+    max-width: 100% !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.form-select option {
+    padding: 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Document Type Selection */
+#step-1 {
+    width: 100%;
+}
+
+#document_type_id {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    min-height: 42px;
+}
+
+/* Request List Styling */
+.list-group-item {
+    transition: all 0.2s ease;
+    border-left: 4px solid transparent;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+.list-group-item:hover {
+    background-color: #f9fafb;
+    border-left-color: #0b3d91;
+    box-shadow: 0 2px 6px rgba(11, 61, 145, 0.08);
+    transform: translateX(2px);
+}
+
+.list-group-item.list-group-item-action {
+    cursor: pointer;
+}
+
+/* Ensure list items with rows stay on one line */
+.list-group-item .row {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    gap: 1rem;
+    margin: 0 !important;
+}
+
+/* Override Bootstrap's column behavior inside list items */
+.list-group-item [class*='col-'] {
+    max-width: none !important;
+    flex-basis: auto !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+}
+
+/* Column sizing for list items */
+.list-group-item .col-md-1,
+.list-group-item .col-md-2,
+.list-group-item .col-md-3,
+.list-group-item .col-md-4,
+.list-group-item .col-md-6 {
+    flex-shrink: 1 !important;
+    min-width: auto !important;
+}
+
+.list-group-item .col-md-6 {
+    flex: 1 1 auto !important;
+}
+
+.list-group-item .col-md-3,
+.list-group-item .col-md-2,
+.list-group-item .col-md-1 {
+    flex: 0 0 auto !important;
+}
+
+.list-group-item .btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.list-group-item .badge {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.doc-type-badge {
+    background: linear-gradient(135deg, #0b3d91 0%, #0d6efd 100%);
+    color: white;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.list-group-item:hover .doc-type-badge {
+    box-shadow: 0 4px 12px rgba(11, 61, 145, 0.25);
+    transform: scale(1.05);
+}
+
+/* Request ID styling */
+.request-id {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+    color: #0b3d91;
+}
+
+/* Status badge improvements */
+.badge {
+    font-weight: 600;
+    padding: 0.55rem 1rem;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    letter-spacing: 0.3px;
+}
+
+.badge.bg-warning {
+    background-color: #fbbf24 !important;
+    color: #78350f !important;
+}
+
+.badge.bg-info {
+    background-color: #06b6d4 !important;
+}
+
+.badge.bg-danger {
+    background-color: #ef4444 !important;
+}
+
+.badge.bg-success {
+    background-color: #10b981 !important;
+}
+
+/* Request Ticket - Timeline Component */
+.timeline {
+    position: relative;
+    padding: 1rem 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e5e7eb;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 60px;
+    margin-bottom: 2rem;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: 10px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    border: 3px solid white;
+    z-index: 1;
+}
+
+.timeline-item.completed .timeline-marker {
+    background: #10b981;
+}
+
+.timeline-item.active .timeline-marker {
+    background: #0b3d91;
+    box-shadow: 0 0 0 4px rgba(11, 61, 145, 0.2);
+}
+
+/* Requirement Display */
+.requirement-item {
+    transition: all 0.2s ease;
+}
+
+.requirement-item:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.file-display {
+    transition: all 0.2s ease;
+}
+
+.file-display:hover {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.text-value {
+    font-size: 0.9rem;
+    color: #374151;
+    line-height: 1.6;
+}
+
+/* Status badge improvements for request ticket */
+.status-badge-large {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 8px;
+}
+
+/* Button styling */
+.btn-outline-primary {
+    border-width: 1.5px;
+    transition: all 0.2s ease;
+}
+
+.btn-outline-primary:hover {
+    background-color: #0b3d91;
+    border-color: #0b3d91;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(11, 61, 145, 0.15);
+}
+
+/* Mobile-friendly spacing only */
+@media (max-width: 768px) {
+    .list-group-item {
+        padding: 0.75rem !important;
+    }
+}
+
+/* Large screen optimization */
+@media (min-width: 992px) {
+    .list-group-item {
+        padding: 1.25rem !important;
+    }
+}

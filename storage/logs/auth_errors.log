@@ -13,3 +13,496 @@
 [10-Dec-2025 22:38:46 Europe/Berlin] Profile inserted successfully for user_id=19
 [10-Dec-2025 22:44:14 Europe/Berlin] Inserting profile: user_id=20, last_name='user', first_name='Third Adams', email='user3@gmail.com', barangay_id=1
 [10-Dec-2025 22:44:14 Europe/Berlin] Profile inserted successfully for user_id=20
+[13-Dec-2025 18:33:33 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'barangay_konek.document_requirement' doesn't exist in E:\xampp\htdocs\barangay-konek\config.php:44
+Stack trace:
+#0 E:\xampp\htdocs\barangay-konek\config.php(44): mysqli->prepare('SELECT dt.id, d...')
+#1 E:\xampp\htdocs\barangay-konek\pages\manage-document-types.php(123): db_query('SELECT dt.id, d...')
+#2 E:\xampp\htdocs\barangay-konek\index.php(121): include('E:\\xampp\\htdocs...')
+#3 {main}
+  thrown in E:\xampp\htdocs\barangay-konek\config.php on line 44
+[13-Dec-2025 18:38:03 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'barangay_konek.document_requirement' doesn't exist in E:\xampp\htdocs\barangay-konek\config.php:44
+Stack trace:
+#0 E:\xampp\htdocs\barangay-konek\config.php(44): mysqli->prepare('SELECT dt.id, d...')
+#1 E:\xampp\htdocs\barangay-konek\pages\manage-document-types.php(123): db_query('SELECT dt.id, d...')
+#2 E:\xampp\htdocs\barangay-konek\index.php(121): include('E:\\xampp\\htdocs...')
+#3 {main}
+  thrown in E:\xampp\htdocs\barangay-konek\config.php on line 44
+[14-Dec-2025 03:09:43 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'requirements' in 'field list' in E:\xampp\htdocs\barangay-konek\config.php:44
+Stack trace:
+#0 E:\xampp\htdocs\barangay-konek\config.php(44): mysqli->prepare('SELECT id, name...')
+#1 E:\xampp\htdocs\barangay-konek\pages\create-request.php(113): db_query('SELECT id, name...')
+#2 E:\xampp\htdocs\barangay-konek\index.php(120): include('E:\\xampp\\htdocs...')
+#3 {main}
+  thrown in E:\xampp\htdocs\barangay-konek\config.php on line 44
+[14-Dec-2025 03:27:49 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'submission_data' in 'field list' in E:\xampp\htdocs\barangay-konek\pages\create-request.php:85
+Stack trace:
+#0 E:\xampp\htdocs\barangay-konek\pages\create-request.php(85): mysqli->prepare('INSERT INTO doc...')
+#1 E:\xampp\htdocs\barangay-konek\index.php(120): include('E:\\xampp\\htdocs...')
+#2 {main}
+  thrown in E:\xampp\htdocs\barangay-konek\pages\create-request.php on line 85
+[14-Dec-2025 03:38:23 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in E:\xampp\htdocs\barangay-konek\pages\create-request.php:131
+Stack trace:
+#0 E:\xampp\htdocs\barangay-konek\pages\create-request.php(131): mysqli_stmt->bind_param('iisss', 4, 19, 'file', '473439802_15423...', 'storage/app/pri...', 'jpg')
+#1 E:\xampp\htdocs\barangay-konek\index.php(120): include('E:\\xampp\\htdocs...')
+#2 {main}
+  thrown in E:\xampp\htdocs\barangay-konek\pages\create-request.php on line 131
+[14-Dec-2025 16:31:59 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 16:31:59 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 1
+[14-Dec-2025 16:31:59 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 
+[14-Dec-2025 16:31:59 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 16:31:59 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => Final-Output.pdf
+)
+
+[14-Dec-2025 16:33:06 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 16:33:06 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 1
+[14-Dec-2025 16:33:06 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 
+[14-Dec-2025 16:33:06 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 16:33:06 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => Final-Output.pdf
+)
+
+[14-Dec-2025 16:34:25 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 16:34:25 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 1
+[14-Dec-2025 16:34:25 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 
+[14-Dec-2025 16:34:25 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 16:34:25 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => Final-Output.pdf
+)
+
+[14-Dec-2025 16:37:06 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 16:37:06 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 1
+[14-Dec-2025 16:37:06 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 
+[14-Dec-2025 16:37:06 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 16:37:06 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => Final-Output.pdf
+)
+
+[14-Dec-2025 16:37:19 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 16:37:19 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 1
+[14-Dec-2025 16:37:19 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 
+[14-Dec-2025 16:37:19 Europe/Berlin] DEBUG revise_documents - files count: 1
+[14-Dec-2025 16:37:19 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => Final-Output.pdf
+)
+
+[14-Dec-2025 16:37:26 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 16:37:26 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 1
+[14-Dec-2025 16:37:26 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 1
+[14-Dec-2025 16:37:26 Europe/Berlin] DEBUG revise_documents - files count: 1
+[14-Dec-2025 16:37:26 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+)
+
+[14-Dec-2025 16:38:57 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 16:38:57 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 16:38:57 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 1
+[14-Dec-2025 16:38:57 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 
+[14-Dec-2025 16:38:57 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 16:38:57 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => Final-Output.pdf
+)
+
+[14-Dec-2025 16:39:06 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 16:39:06 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 16:39:06 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 1
+[14-Dec-2025 16:39:06 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 
+[14-Dec-2025 16:39:06 Europe/Berlin] DEBUG revise_documents - files count: 1
+[14-Dec-2025 16:39:06 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => Final-Output.pdf
+)
+
+[14-Dec-2025 16:42:40 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 16:42:40 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 16:42:40 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 1
+[14-Dec-2025 16:42:40 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 
+[14-Dec-2025 16:42:40 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 16:42:40 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => front photo.jpg
+)
+
+[14-Dec-2025 16:43:04 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 16:43:04 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 16:43:04 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 1
+[14-Dec-2025 16:43:04 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 
+[14-Dec-2025 16:43:04 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 16:43:04 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => front photo.jpg
+)
+
+[14-Dec-2025 16:43:40 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 16:43:40 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 16:43:40 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 1
+[14-Dec-2025 16:43:40 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 
+[14-Dec-2025 16:43:40 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 16:43:40 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => front photo.jpg
+)
+
+[14-Dec-2025 16:46:18 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 16:46:18 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 16:46:18 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 1
+[14-Dec-2025 16:46:18 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 
+[14-Dec-2025 16:46:18 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 16:46:18 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => front photo.jpg
+)
+
+[14-Dec-2025 16:48:38 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 16:48:38 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 16:48:38 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 16:48:38 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 1
+[14-Dec-2025 16:48:38 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 
+[14-Dec-2025 16:48:38 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 16:48:38 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => front photo.jpg
+)
+
+[14-Dec-2025 16:49:49 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 16:49:49 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 16:49:49 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 16:49:49 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 1
+[14-Dec-2025 16:49:49 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 1
+[14-Dec-2025 16:49:49 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 16:49:49 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => Final-Output.pdf
+)
+
+[14-Dec-2025 16:50:29 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 16:50:29 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 16:50:29 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 16:50:29 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 1
+[14-Dec-2025 16:50:29 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 1
+[14-Dec-2025 16:50:29 Europe/Berlin] DEBUG revise_documents - files count: 1
+[14-Dec-2025 16:50:29 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+)
+
+[14-Dec-2025 16:51:56 Europe/Berlin] DEBUG TOP: POST handler reached. action=reject, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 16:51:56 Europe/Berlin] DEBUG POST RECEIVED: action=reject, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 16:52:25 Europe/Berlin] DEBUG TOP: POST handler reached. action=submit_revision, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 16:52:25 Europe/Berlin] DEBUG POST RECEIVED: action=submit_revision, status=3, claimed_by=3, user_id=4
+[14-Dec-2025 16:54:52 Europe/Berlin] DEBUG TOP: POST handler reached. action=approve, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 16:54:52 Europe/Berlin] DEBUG POST RECEIVED: action=approve, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 16:57:13 Europe/Berlin] DEBUG TOP: POST handler reached. action=reject_approved, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 16:57:13 Europe/Berlin] DEBUG POST RECEIVED: action=reject_approved, status=2, claimed_by=3, user_id=2
+[14-Dec-2025 16:57:58 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 16:57:58 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 16:57:58 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 16:57:58 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 16:57:58 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 21
+[14-Dec-2025 16:57:58 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 16:57:58 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => front photo.jpg
+    [1] => 
+)
+
+[14-Dec-2025 16:58:28 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 16:58:28 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 16:58:28 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 16:58:28 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 16:58:28 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 21
+[14-Dec-2025 16:58:28 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 16:58:28 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => 
+)
+
+[14-Dec-2025 17:05:07 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 17:05:07 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 17:05:07 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 17:05:07 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 17:05:07 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 21
+[14-Dec-2025 17:05:07 Europe/Berlin] DEBUG revise_documents - files count: 3
+[14-Dec-2025 17:05:07 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => front photo.jpg
+    [1] => 
+    [2] => ERD .png
+)
+
+[14-Dec-2025 17:05:41 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 17:05:41 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 17:05:41 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 17:05:41 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 17:05:41 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 21
+[14-Dec-2025 17:05:41 Europe/Berlin] DEBUG revise_documents - files count: 3
+[14-Dec-2025 17:05:41 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => front photo.jpg
+    [1] => 
+    [2] => front photo.jpg
+)
+
+[14-Dec-2025 17:07:42 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 17:07:42 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 17:07:42 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 17:07:42 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 17:07:42 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 21
+[14-Dec-2025 17:07:42 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 17:07:42 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => front photo.jpg
+    [1] => 
+)
+
+[14-Dec-2025 17:19:38 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 17:19:38 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 17:19:38 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 17:19:38 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 17:19:38 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 
+[14-Dec-2025 17:19:38 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 17:19:38 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => front photo.jpg
+    [1] => 
+)
+
+[14-Dec-2025 17:19:55 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 17:19:55 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 17:19:55 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 17:19:55 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 17:19:55 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 20
+[14-Dec-2025 17:19:55 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 17:19:55 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => 
+)
+
+[14-Dec-2025 17:20:25 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 17:20:25 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 17:20:25 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 17:20:25 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 17:20:25 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 20
+[14-Dec-2025 17:20:25 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 17:20:25 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => 
+)
+
+[14-Dec-2025 17:20:30 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 17:20:30 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 17:20:30 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 17:20:30 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 17:20:30 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 20
+[14-Dec-2025 17:20:30 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 17:20:30 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => 
+)
+
+[14-Dec-2025 17:20:35 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 17:20:35 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 17:20:35 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 17:20:35 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 17:20:35 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 20
+[14-Dec-2025 17:20:35 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 17:20:35 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => 
+)
+
+[14-Dec-2025 17:20:38 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 17:20:38 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 17:20:38 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 17:20:38 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 17:20:38 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 20
+[14-Dec-2025 17:20:38 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 17:20:38 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => 
+)
+
+[14-Dec-2025 17:20:41 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 17:20:41 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 17:20:41 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 17:20:41 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 17:20:41 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 20
+[14-Dec-2025 17:20:41 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 17:20:41 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => 
+)
+
+[14-Dec-2025 17:21:01 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 17:21:01 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 17:21:01 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 17:21:01 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 17:21:01 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 
+[14-Dec-2025 17:21:01 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 17:21:01 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => front photo.jpg
+)
+
+[14-Dec-2025 17:21:12 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 17:21:12 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 17:21:12 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 17:21:12 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 17:21:12 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 
+[14-Dec-2025 17:21:12 Europe/Berlin] DEBUG revise_documents - files count: 3
+[14-Dec-2025 17:21:12 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => 
+    [2] => front photo.jpg
+)
+
+[14-Dec-2025 17:21:19 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 17:21:19 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 17:21:19 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 17:21:19 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 17:21:19 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 
+[14-Dec-2025 17:21:19 Europe/Berlin] DEBUG revise_documents - files count: 3
+[14-Dec-2025 17:21:19 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => 
+    [2] => front photo.jpg
+)
+
+[14-Dec-2025 17:22:30 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 17:22:30 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 17:22:30 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 17:22:30 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 17:22:30 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 21
+[14-Dec-2025 17:22:30 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 17:22:30 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => 
+)
+
+[14-Dec-2025 17:23:08 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 17:23:08 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 17:23:08 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 17:23:08 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 17:23:08 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 20
+[14-Dec-2025 17:23:08 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 17:23:08 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => 
+)
+
+[14-Dec-2025 17:25:32 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 17:25:32 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 17:25:32 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 17:25:32 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 17:25:32 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 20
+[14-Dec-2025 17:25:32 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 17:25:32 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => 
+)
+
+[14-Dec-2025 17:25:47 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 17:25:47 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 17:25:47 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 17:25:47 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 17:25:47 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 20
+[14-Dec-2025 17:25:47 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 17:25:47 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => 
+)
+
+[14-Dec-2025 17:25:58 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 17:25:58 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 17:25:58 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 17:25:58 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 17:25:58 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 21
+[14-Dec-2025 17:25:58 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 17:25:58 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => 
+)
+
+[14-Dec-2025 17:34:37 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 17:34:37 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 17:34:37 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 17:34:37 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 17:34:37 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 
+[14-Dec-2025 17:34:37 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 17:34:37 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => ERD .png
+    [1] => 
+)
+
+[14-Dec-2025 17:34:50 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 17:34:50 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 17:34:50 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 17:34:50 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 17:34:50 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 
+[14-Dec-2025 17:34:50 Europe/Berlin] DEBUG revise_documents - files count: 2
+[14-Dec-2025 17:34:50 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => front photo.jpg
+    [1] => 
+)
+
+[14-Dec-2025 17:47:00 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 17:47:00 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 17:47:00 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 17:47:00 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 17:47:00 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 
+[14-Dec-2025 17:47:00 Europe/Berlin] DEBUG revise_documents - files count: 3
+[14-Dec-2025 17:47:00 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => front photo.jpg
+    [1] => 
+    [2] => 
+)
+
+[14-Dec-2025 17:48:18 Europe/Berlin] DEBUG TOP: POST handler reached. action=revise_documents, uri=/barangay-konek/index.php?nav=request-ticket&id=5
+[14-Dec-2025 17:48:18 Europe/Berlin] DEBUG POST RECEIVED: action=revise_documents, status=1, claimed_by=3, user_id=3
+[14-Dec-2025 17:48:18 Europe/Berlin] DEBUG revise_documents - Action triggered!
+[14-Dec-2025 17:48:18 Europe/Berlin] DEBUG revise_documents - existing_doc_ids count: 2
+[14-Dec-2025 17:48:18 Europe/Berlin] DEBUG revise_documents - docs_to_remove: 20
+[14-Dec-2025 17:48:18 Europe/Berlin] DEBUG revise_documents - files count: 3
+[14-Dec-2025 17:48:18 Europe/Berlin] DEBUG revise_documents - file names: Array
+(
+    [0] => 
+    [1] => 
+    [2] => 
+)
+

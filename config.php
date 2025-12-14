@@ -177,6 +177,41 @@ function activity_log($user_id, $action, $reference_table = null, $reference_id 
     return $ok;
 }
 
+// Lightweight notification helpers (safe no-op if notification table is not present)
+function notify_resident($user_id, $title, $message, $link = null) {
+    return activity_log($user_id, "Notify resident: {$title} - {$message}", $link ? 'notification' : null, null);
+}
+
+function notify_staff($barangay_id, $title, $message, $link = null) {
+    global $conn;
+    $stmt = $conn->prepare('SELECT u.id FROM users u JOIN profile p ON p.user_id = u.id WHERE u.usertype_id = ? AND p.barangay_id = ?');
+    if (!$stmt) return false;
+    $staff_role = ROLE_STAFF;
+    $stmt->bind_param('ii', $staff_role, $barangay_id);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    while ($row = $res->fetch_assoc()) {
+        activity_log(intval($row['id']), "Notify staff: {$title} - {$message}", $link ? 'notification' : null, null);
+    }
+    $stmt->close();
+    return true;
+}
+
+function notify_admin($barangay_id, $title, $message, $link = null) {
+    global $conn;
+    $stmt = $conn->prepare('SELECT u.id FROM users u JOIN profile p ON p.user_id = u.id WHERE u.usertype_id = ? AND p.barangay_id = ?');
+    if (!$stmt) return false;
+    $admin_role = ROLE_ADMIN;
+    $stmt->bind_param('ii', $admin_role, $barangay_id);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    while ($row = $res->fetch_assoc()) {
+        activity_log(intval($row['id']), "Notify admin: {$title} - {$message}", $link ? 'notification' : null, null);
+    }
+    $stmt->close();
+    return true;
+}
+
 // Safe file upload helper - stores in storage/app/private/requests
 function ensure_storage_dir() {
     $base = __DIR__ . '/storage/app/private/requests';

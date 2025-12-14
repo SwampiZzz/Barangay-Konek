@@ -279,7 +279,7 @@ require_once __DIR__ . '/../public/header.php';
                                     <small class="text-muted d-block">Account Type</small>
                                         <small class="fw-semibold"><?php
                                             $utId = intval($u['usertype_id'] ?? 0);
-                                            $typeLabel = ($utId === 4) ? 'Resident' : (($utId === 3) ? 'Staff' : 'Unknown');
+                                            $typeLabel = ($utId === 2) ? 'Admin' : (($utId === 4) ? 'Resident' : (($utId === 3) ? 'Staff' : 'Unknown'));
                                             echo htmlspecialchars($typeLabel);
                                         ?></small>
                                 </div>

@@ -140,9 +140,50 @@ CREATE TABLE user_verification (
 CREATE TABLE document_type ( 
     id INT PRIMARY KEY AUTO_INCREMENT, 
     name VARCHAR(255) NOT NULL, 
-    description VARCHAR(255), 
-    requirements VARCHAR(255) 
+    description VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ); 
+
+CREATE TABLE document_form (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    form_type VARCHAR(50) DEFAULT 'custom',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE document_requirement (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    document_type_id INT NOT NULL,
+    requirement_type ENUM('document_upload', 'text_input', 'form') NOT NULL,
+    label VARCHAR(255) NOT NULL,
+    description TEXT,
+    field_type VARCHAR(50),
+    is_required BOOLEAN DEFAULT TRUE,
+    validation_rules JSON,
+    form_id INT NULL,
+    sort_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (document_type_id) REFERENCES document_type(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (form_id) REFERENCES document_form(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE document_requirement_submission (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    request_id INT NOT NULL,
+    requirement_id INT NOT NULL,
+    submission_type VARCHAR(50) NOT NULL,
+    text_value TEXT,
+    file_path VARCHAR(255),
+    file_name VARCHAR(255),
+    file_type VARCHAR(100),
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (request_id) REFERENCES request(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (requirement_id) REFERENCES document_requirement(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
 
 CREATE TABLE request_status (
     id INT PRIMARY KEY AUTO_INCREMENT, 

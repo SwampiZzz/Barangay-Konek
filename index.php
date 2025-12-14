@@ -34,13 +34,12 @@ $pages = [
     'user-dashboard' => ['file' => 'pages/user-dashboard.php', 'roles' => [ROLE_USER]],
     'create-request' => ['file' => 'pages/create-request.php', 'roles' => [ROLE_USER], 'require_verification' => true],
     'manage-requests' => ['file' => 'pages/manage-requests.php', 'roles' => [ROLE_USER, ROLE_STAFF, ROLE_ADMIN, ROLE_SUPERADMIN], 'require_verification' => true],
-    'request-ticket' => ['file' => 'pages/request-ticket.php', 'roles' => [ROLE_USER], 'require_verification' => true],
+    'request-ticket' => ['file' => 'pages/request-ticket.php', 'roles' => [ROLE_USER, ROLE_STAFF, ROLE_ADMIN, ROLE_SUPERADMIN], 'require_verification' => true],
     'complaint-list' => ['file' => 'pages/complaint-list.php', 'roles' => [ROLE_USER], 'require_verification' => true],
     'profile' => ['file' => 'pages/profile.php', 'roles' => [ROLE_USER, ROLE_STAFF, ROLE_ADMIN, ROLE_SUPERADMIN]],
     
     // Staff pages
     'staff-dashboard' => ['file' => 'pages/staff-dashboard.php', 'roles' => [ROLE_STAFF]],
-    'manage-requests' => ['file' => 'pages/manage-requests.php', 'roles' => [ROLE_STAFF, ROLE_ADMIN]],
     'manage-complaints' => ['file' => 'pages/manage-complaints.php', 'roles' => [ROLE_STAFF, ROLE_ADMIN]],
     'manage-document-types' => ['file' => 'pages/manage-document-types.php', 'roles' => [ROLE_ADMIN]],
     

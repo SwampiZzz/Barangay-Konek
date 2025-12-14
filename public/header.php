@@ -12,6 +12,8 @@ if (!defined('WEB_ROOT')) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo isset($pageTitle) ? htmlspecialchars($pageTitle) . ' - Barangay Konek' : 'Barangay Konek'; ?></title>
+    <link rel="icon" type="image/png" href="<?php echo WEB_ROOT; ?>/public/assets/img/Barangay-Konek-Logo-Only.png">
+    <link rel="shortcut icon" href="<?php echo WEB_ROOT; ?>/public/assets/img/Barangay-Konek-Logo-Only.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<?php echo WEB_ROOT; ?>/public/assets/css/style.css">
@@ -23,18 +25,5 @@ if (!defined('WEB_ROOT')) {
 <body>
     <!-- Top Navigation -->
         <?php require_once __DIR__ . '/nav.php'; ?>
-
-    <!-- Flash Messages -->
-    <?php 
-    $flash = flash_get();
-    if (!empty($flash['message'])): 
-    ?>
-        <div class="container-fluid mt-3">
-            <div class="alert alert-<?php echo $flash['type'] === 'error' ? 'danger' : ($flash['type'] === 'success' ? 'success' : 'info'); ?> alert-dismissible fade show" role="alert">
-                <?php echo e($flash['message']); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        </div>
-    <?php endif; ?>
 
     <main class="flex-grow-1">
