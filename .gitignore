@@ -23,10 +23,16 @@ storage/temp/
 storage/app/private/*
 !storage/app/private/profile_pics/
 !storage/app/private/requests/
+!storage/app/private/announcements/
+!storage/app/private/complaints/
 storage/app/private/profile_pics/*
 !storage/app/private/profile_pics/.gitkeep
 storage/app/private/requests/*
 !storage/app/private/requests/.gitkeep
+storage/app/private/announcements/*
+!storage/app/private/announcements/.gitkeep
+storage/app/private/complaints/*
+!storage/app/private/complaints/.gitkeep
 
 # Uploaded public assets (if any)
 public/uploads/

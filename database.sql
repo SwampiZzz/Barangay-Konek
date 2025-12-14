@@ -108,10 +108,24 @@ CREATE TABLE announcement (
     image_path VARCHAR(255), 
     user_id INT NULL, 
     barangay_id INT, 
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL, 
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE, 
-    FOREIGN KEY (barangay_id) REFERENCES barangay(id) ON DELETE CASCADE ON UPDATE CASCADE ); 
+    FOREIGN KEY (barangay_id) REFERENCES barangay(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE announcement_comment (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    announcement_id INT NOT NULL,
+    user_id INT NOT NULL,
+    message TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at DATETIME NULL DEFAULT NULL,
+    FOREIGN KEY (announcement_id) REFERENCES announcement(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+); 
     
 -- verification status and resident verification 
 CREATE TABLE verification_status (
@@ -233,11 +247,17 @@ INSERT INTO complaint_status (name) VALUES ('open'), ('in_progress'), ('resolved
 CREATE TABLE complaint ( 
     id INT PRIMARY KEY AUTO_INCREMENT, 
     user_id INT NOT NULL, 
+    barangay_id INT NOT NULL,
     title VARCHAR(255), 
     description TEXT, 
+    is_anonymous TINYINT DEFAULT 0,
     complaint_status_id INT, 
+    remarks TEXT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP, 
-    deleted_at DATETIME NULL, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE, 
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at DATETIME NULL, 
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (barangay_id) REFERENCES barangay(id) ON DELETE CASCADE ON UPDATE CASCADE, 
     FOREIGN KEY (complaint_status_id) REFERENCES complaint_status(id) ON DELETE CASCADE ON UPDATE CASCADE 
 ); 
 
@@ -247,6 +267,16 @@ CREATE TABLE complaint_attachment (
     uploaded_at DATETIME, 
     FOREIGN KEY (complaint_id) REFERENCES complaint(id) ON DELETE CASCADE ON UPDATE CASCADE 
 ); 
+
+CREATE TABLE complaint_comment (
+    id INT AUTO_INCREMENT PRIMARY KEY, 
+    complaint_id INT NOT NULL, 
+    user_id INT NOT NULL, 
+    message TEXT NOT NULL, 
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP, 
+    FOREIGN KEY (complaint_id) REFERENCES complaint(id), 
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
 
 CREATE TABLE notification ( 
     id INT PRIMARY KEY AUTO_INCREMENT, 

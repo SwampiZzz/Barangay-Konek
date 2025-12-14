@@ -91,7 +91,7 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
                         <a class="nav-link py-2 <?php echo !$is_verified ? 'disabled' : ''; ?>" href="<?php echo $is_verified ? WEB_ROOT . '/index.php?nav=manage-requests' : '#'; ?>" <?php echo !$is_verified ? 'style="cursor: not-allowed; opacity: 0.6;" title="Verify your account to access requests"' : ''; ?>>Requests</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link py-2 <?php echo !$is_verified ? 'disabled' : ''; ?>" href="<?php echo $is_verified ? WEB_ROOT . '/index.php?nav=complaint-list' : '#'; ?>" <?php echo !$is_verified ? 'style="cursor: not-allowed; opacity: 0.6;" title="Verify your account to access complaints"' : ''; ?>>Complaints</a>
+                        <a class="nav-link py-2 <?php echo !$is_verified ? 'disabled' : ''; ?>" href="<?php echo $is_verified ? WEB_ROOT . '/index.php?nav=manage-complaints' : '#'; ?>" <?php echo !$is_verified ? 'style="cursor: not-allowed; opacity: 0.6;" title="Verify your account to access complaints"' : ''; ?>>Complaints</a>
                     </li>
                     <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=announcements">Announcements</a></li>
                 <?php elseif ($role === ROLE_STAFF): ?>

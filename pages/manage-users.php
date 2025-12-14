@@ -112,7 +112,7 @@ $per_page = 10;
 $offset = ($page - 1) * $per_page;
 $role_map = ['user'=>4, 'staff'=>3]; // from usertype table (admins excluded)
 
-$where = ' WHERE p.barangay_id = ' . $barangay_id . ' AND u.usertype_id IN (2,3,4)'; // Admins (2), staff (3) and users (4)
+$where = ' WHERE p.barangay_id = ' . $barangay_id . ' AND u.usertype_id IN (2,3,4) AND u.deleted_at IS NULL'; // Admins (2), staff (3) and users (4) - exclude deleted
 if (in_array($filter, ['user','staff'], true)) {
     $where .= ' AND u.usertype_id = ' . $role_map[$filter];
 }

@@ -95,8 +95,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     exit;
 }
 
-// Build query based on filter - filter by admin's barangay
-$where = ' WHERE p.barangay_id = ' . intval($barangay_id);
+// Build query based on filter - filter by admin's barangay and exclude deleted users
+$where = ' WHERE p.barangay_id = ' . intval($barangay_id) . ' AND u.deleted_at IS NULL';
 if ($filter !== 'all' && isset($status_map[$filter])) {
     $where .= ' AND uv.verification_status_id = ' . $status_map[$filter];
 }

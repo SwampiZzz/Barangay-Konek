@@ -506,3 +506,49 @@ Stack trace:
     [2] => 
 )
 
+[14-Dec-2025 20:54:48 Europe/Berlin] Create Complaint Error: Unknown column 'file_name' in 'field list'
+[14-Dec-2025 20:55:10 Europe/Berlin] PHP Warning:  require_once(E:\xampp\htdocs\barangay-konek\pages/../helpers/notifications.php): Failed to open stream: No such file or directory in E:\xampp\htdocs\barangay-konek\pages\complaint-ticket.php on line 4
+[14-Dec-2025 20:55:10 Europe/Berlin] PHP Fatal error:  Uncaught Error: Failed opening required 'E:\xampp\htdocs\barangay-konek\pages/../helpers/notifications.php' (include_path='E:\xampp\php\PEAR') in E:\xampp\htdocs\barangay-konek\pages\complaint-ticket.php:4
+Stack trace:
+#0 E:\xampp\htdocs\barangay-konek\index.php(123): include()
+#1 {main}
+  thrown in E:\xampp\htdocs\barangay-konek\pages\complaint-ticket.php on line 4
+[14-Dec-2025 21:05:04 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'c.resolution_remarks' in 'field list' in E:\xampp\htdocs\barangay-konek\pages\complaint-ticket.php:191
+Stack trace:
+#0 E:\xampp\htdocs\barangay-konek\pages\complaint-ticket.php(191): mysqli->prepare('\r\n    SELECT \r\n...')
+#1 E:\xampp\htdocs\barangay-konek\index.php(123): include('E:\\xampp\\htdocs...')
+#2 {main}
+  thrown in E:\xampp\htdocs\barangay-konek\pages\complaint-ticket.php on line 191
+[14-Dec-2025 21:07:00 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'file_name' in 'field list' in E:\xampp\htdocs\barangay-konek\pages\complaint-ticket.php:238
+Stack trace:
+#0 E:\xampp\htdocs\barangay-konek\pages\complaint-ticket.php(238): mysqli->prepare('\r\n    SELECT id...')
+#1 E:\xampp\htdocs\barangay-konek\index.php(123): include('E:\\xampp\\htdocs...')
+#2 {main}
+  thrown in E:\xampp\htdocs\barangay-konek\pages\complaint-ticket.php on line 238
+[14-Dec-2025 21:07:01 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'file_name' in 'field list' in E:\xampp\htdocs\barangay-konek\pages\complaint-ticket.php:238
+Stack trace:
+#0 E:\xampp\htdocs\barangay-konek\pages\complaint-ticket.php(238): mysqli->prepare('\r\n    SELECT id...')
+#1 E:\xampp\htdocs\barangay-konek\index.php(123): include('E:\\xampp\\htdocs...')
+#2 {main}
+  thrown in E:\xampp\htdocs\barangay-konek\pages\complaint-ticket.php on line 238
+[14-Dec-2025 21:07:02 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'file_name' in 'field list' in E:\xampp\htdocs\barangay-konek\pages\complaint-ticket.php:238
+Stack trace:
+#0 E:\xampp\htdocs\barangay-konek\pages\complaint-ticket.php(238): mysqli->prepare('\r\n    SELECT id...')
+#1 E:\xampp\htdocs\barangay-konek\index.php(123): include('E:\\xampp\\htdocs...')
+#2 {main}
+  thrown in E:\xampp\htdocs\barangay-konek\pages\complaint-ticket.php on line 238
+[14-Dec-2025 21:07:10 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'file_name' in 'field list' in E:\xampp\htdocs\barangay-konek\pages\complaint-ticket.php:238
+Stack trace:
+#0 E:\xampp\htdocs\barangay-konek\pages\complaint-ticket.php(238): mysqli->prepare('\r\n    SELECT id...')
+#1 E:\xampp\htdocs\barangay-konek\index.php(123): include('E:\\xampp\\htdocs...')
+#2 {main}
+  thrown in E:\xampp\htdocs\barangay-konek\pages\complaint-ticket.php on line 238
+[14-Dec-2025 21:19:12 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'u.role_id' in 'field list' in E:\xampp\htdocs\barangay-konek\pages\complaint-ticket.php:313
+Stack trace:
+#0 E:\xampp\htdocs\barangay-konek\pages\complaint-ticket.php(313): mysqli->prepare('\r\n    SELECT \r\n...')
+#1 E:\xampp\htdocs\barangay-konek\index.php(123): include('E:\\xampp\\htdocs...')
+#2 {main}
+  thrown in E:\xampp\htdocs\barangay-konek\pages\complaint-ticket.php on line 313
+[14-Dec-2025 21:20:46 Europe/Berlin] PHP Warning:  Undefined array key "role_id" in E:\xampp\htdocs\barangay-konek\pages\complaint-ticket.php on line 486
+[15-Dec-2025 00:14:29 Europe/Berlin] Inserting profile: user_id=23, last_name='kernolas', first_name='wancho', email='samplecalogcog@gmail.com', barangay_id=26827
+[15-Dec-2025 00:14:29 Europe/Berlin] Profile inserted successfully for user_id=23

@@ -8,7 +8,7 @@ require_role([ROLE_SUPERADMIN]);
 $pageTitle = 'Activity Logs';
 
 // Get activity logs
-$res = db_query('SELECT al.*, u.username FROM activity_log al LEFT JOIN users u ON al.user_id = u.id ORDER BY al.created_at DESC LIMIT 100', '', []);
+$res = db_query('SELECT al.*, u.username, u.deleted_at as user_deleted_at FROM activity_log al LEFT JOIN users u ON al.user_id = u.id ORDER BY al.created_at DESC LIMIT 100', '', []);
 $logs = [];
 if ($res) {
     while ($row = $res->fetch_assoc()) {
@@ -37,7 +37,15 @@ require_once __DIR__ . '/../public/header.php';
                     <?php foreach ($logs as $log): ?>
                         <tr>
                             <td><?php echo date('M d, Y H:i', strtotime($log['created_at'])); ?></td>
-                            <td><?php echo e($log['username'] ?? 'System'); ?></td>
+                            <td>
+                                <?php 
+                                if (!empty($log['user_deleted_at'])) {
+                                    echo '<span class="text-muted fst-italic">[Deleted User]</span>';
+                                } else {
+                                    echo e($log['username'] ?? 'System');
+                                }
+                                ?>
+                            </td>
                             <td><?php echo e($log['action']); ?></td>
                             <td>
                                 <?php if ($log['reference_table']): ?>

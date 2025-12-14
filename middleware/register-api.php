@@ -45,22 +45,32 @@ if ($action === 'get_cities') {
 
 if ($action === 'get_barangays') {
     $city_id = intval($_GET['city_id'] ?? 0);
+    $show_all = isset($_GET['show_all']) && $_GET['show_all'] === 'true';
+    
     if (!$city_id) {
         echo json_encode(['success' => false, 'message' => 'Invalid city']);
         exit;
     }
     
-    // Only show barangays that have an admin user registered
-    // Check if there's a user with role=2 (admin) whose profile.barangay_id matches
-    $sql = 'SELECT DISTINCT b.id, b.name 
-            FROM barangay b
-            INNER JOIN profile p ON b.id = p.barangay_id
-            INNER JOIN users u ON p.user_id = u.id
-            WHERE b.city_id = ? 
-            AND b.deleted_at IS NULL 
-            AND u.usertype_id = 2
-            AND u.deleted_at IS NULL
-            ORDER BY b.name ASC';
+    if ($show_all) {
+        // For admin creation: show ALL barangays (including those without admins)
+        $sql = 'SELECT id, name 
+                FROM barangay 
+                WHERE city_id = ? 
+                AND deleted_at IS NULL 
+                ORDER BY name ASC';
+    } else {
+        // For user registration: only show barangays that have an admin user registered
+        $sql = 'SELECT DISTINCT b.id, b.name 
+                FROM barangay b
+                INNER JOIN profile p ON b.id = p.barangay_id
+                INNER JOIN users u ON p.user_id = u.id
+                WHERE b.city_id = ? 
+                AND b.deleted_at IS NULL 
+                AND u.usertype_id = 2
+                AND u.deleted_at IS NULL
+                ORDER BY b.name ASC';
+    }
     
     $res = db_query($sql, 'i', [$city_id]);
     if ($res) {

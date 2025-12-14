@@ -69,7 +69,7 @@ if ($user_role === ROLE_STAFF) {
     $priority_sql = "
         SELECT r.id, r.user_id, r.document_type_id, r.request_status_id, r.claimed_by,
                r.created_at, dt.name as doc_type, rs.name as status_name,
-               p.first_name, p.last_name, u.username
+               p.first_name, p.last_name, u.username, u.deleted_at as user_deleted_at
         FROM request r
         LEFT JOIN document_type dt ON r.document_type_id = dt.id
         LEFT JOIN request_status rs ON r.request_status_id = rs.id
@@ -93,7 +93,7 @@ if ($user_role === ROLE_STAFF) {
     $priority_sql = "
         SELECT r.id, r.user_id, r.document_type_id, r.request_status_id, r.claimed_by,
                r.created_at, dt.name as doc_type, rs.name as status_name,
-               p.first_name, p.last_name, u.username
+               p.first_name, p.last_name, u.username, u.deleted_at as user_deleted_at
         FROM request r
         LEFT JOIN document_type dt ON r.document_type_id = dt.id
         LEFT JOIN request_status rs ON r.request_status_id = rs.id
@@ -156,7 +156,7 @@ $total_pages = ceil($total_requests / $per_page);
 $sql = "
     SELECT r.id, r.user_id, r.document_type_id, r.request_status_id, r.claimed_by,
            r.created_at, dt.name as doc_type, rs.name as status_name,
-           p.first_name, p.last_name, u.username
+           p.first_name, p.last_name, u.username, u.deleted_at as user_deleted_at
     FROM request r
     LEFT JOIN document_type dt ON r.document_type_id = dt.id
     LEFT JOIN request_status rs ON r.request_status_id = rs.id
@@ -213,6 +213,14 @@ $counts = $count_res ? $count_res->fetch_assoc() : [
     'completed_count' => 0,
     'total_count' => 0,
 ];
+
+// Helper function to display user name or [Deleted User]
+function displayUserName($row) {
+    if (!empty($row['user_deleted_at'])) {
+        return '<span class="text-muted fst-italic">[Deleted User]</span>';
+    }
+    return htmlspecialchars(($row['first_name'] ?? '') . ' ' . ($row['last_name'] ?? ''));
+}
 
 require_once __DIR__ . '/../public/header.php';
 
@@ -322,7 +330,7 @@ if ($dtRes) {
                                             <?php echo htmlspecialchars($r['doc_type'] ?? 'Unknown Document'); ?>
                                         </h6>
                                         <small class="text-muted d-block mb-1" style="font-size: 0.8rem;">
-                                            <i class="fas fa-user-circle me-1" style="color: #9ca3af;"></i><?php echo htmlspecialchars(($r['first_name'] ?? '') . ' ' . ($r['last_name'] ?? '')); ?>
+                                            <i class="fas fa-user-circle me-1" style="color: #9ca3af;"></i><?php echo displayUserName($r); ?>
                                         </small>
                                         <small class="text-muted d-block" style="font-size: 0.8rem;">
                                             <i class="far fa-clock me-1" style="color: #9ca3af;"></i><?php echo date('M d, Y • h:i A', strtotime($r['created_at'])); ?>
@@ -386,7 +394,7 @@ if ($dtRes) {
                                             <?php echo htmlspecialchars($r['doc_type'] ?? 'Unknown Document'); ?>
                                         </h6>
                                         <small class="text-muted d-block mb-1" style="font-size: 0.8rem;">
-                                            <i class="fas fa-user-circle me-1" style="color: #9ca3af;"></i><?php echo htmlspecialchars(($r['first_name'] ?? '') . ' ' . ($r['last_name'] ?? '')); ?>
+                                            <i class="fas fa-user-circle me-1" style="color: #9ca3af;"></i><?php echo displayUserName($r); ?>
                                         </small>
                                         <small class="text-muted d-block" style="font-size: 0.8rem;">
                                             <i class="far fa-clock me-1" style="color: #9ca3af;"></i><?php echo date('M d, Y • h:i A', strtotime($r['created_at'])); ?>
@@ -543,3 +551,4 @@ function loadRequestData(r) {
 </script>
 
 <?php require_once __DIR__ . '/../public/footer.php'; ?>
+
