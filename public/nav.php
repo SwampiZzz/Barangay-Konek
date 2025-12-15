@@ -110,7 +110,6 @@ $profilePicUrl = file_exists($profilePicPath) ? $profilePicWeb . $profilePicName
                 <?php elseif ($role === ROLE_SUPERADMIN): ?>
                     <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=superadmin-dashboard">Dashboard</a></li>
                     <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=admin-management">Admin Management</a></li>
-                    <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=barangay-overview">Barangay Overview</a></li>
                     <li class="nav-item"><a class="nav-link py-2" href="<?php echo WEB_ROOT; ?>/index.php?nav=activity-logs">Activity Logs</a></li>
                 <?php endif; ?>
             </ul>

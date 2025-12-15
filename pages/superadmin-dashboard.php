@@ -99,76 +99,7 @@ require_once __DIR__ . '/../public/header.php';
         </div>
 
         <!-- Management Tools -->
-        <div>
-            <h5 class="mb-4 fw-bold" style="color: #2c3e50;">
-                <i class="fas fa-tools me-2" style="color: #0d6efd;"></i>Management Tools
-            </h5>
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <a href="index.php?nav=admin-management" class="text-decoration-none">
-                        <div class="card border-0 shadow-sm h-100 hover-card-link">
-                            <div class="card-body p-4">
-                                <div class="d-flex align-items-center mb-3">
-                                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                                        <i class="fas fa-user-shield text-white" style="font-size: 1.3rem;"></i>
-                                    </div>
-                                    <div>
-                                        <h6 class="mb-0 fw-bold">Admin Management</h6>
-                                        <small class="text-muted">Create & manage admins</small>
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="badge bg-primary"><?php echo $admin_count; ?> Active</span>
-                                    <i class="fas fa-arrow-right text-muted"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-4">
-                    <a href="index.php?nav=barangay-overview" class="text-decoration-none">
-                        <div class="card border-0 shadow-sm h-100 hover-card-link">
-                            <div class="card-body p-4">
-                                <div class="d-flex align-items-center mb-3">
-                                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                                        <i class="fas fa-map-marked-alt text-white" style="font-size: 1.3rem;"></i>
-                                    </div>
-                                    <div>
-                                        <h6 class="mb-0 fw-bold">Barangay Overview</h6>
-                                        <small class="text-muted">View all barangays</small>
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="badge bg-danger"><?php echo $barangay_count; ?> Locations</span>
-                                    <i class="fas fa-arrow-right text-muted"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-4">
-                    <a href="index.php?nav=activity-logs" class="text-decoration-none">
-                        <div class="card border-0 shadow-sm h-100 hover-card-link">
-                            <div class="card-body p-4">
-                                <div class="d-flex align-items-center mb-3">
-                                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                                        <i class="fas fa-history text-white" style="font-size: 1.3rem;"></i>
-                                    </div>
-                                    <div>
-                                        <h6 class="mb-0 fw-bold">Activity Logs</h6>
-                                        <small class="text-muted">System audit trail</small>
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="badge bg-info text-dark"><?php echo $activity_24h; ?> Today</span>
-                                    <i class="fas fa-arrow-right text-muted"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
+        
     </div>
 </div>
 

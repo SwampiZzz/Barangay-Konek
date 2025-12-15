@@ -51,11 +51,11 @@ $pages = [
     'manage-verifications' => ['file' => 'pages/manage-verifications.php', 'roles' => [ROLE_ADMIN]],
     'manage-users' => ['file' => 'pages/manage-users.php', 'roles' => [ROLE_ADMIN, ROLE_STAFF]],
     'barangay-overview' => ['file' => 'pages/barangay-overview.php', 'roles' => [ROLE_ADMIN]],
-    'activity-logs' => ['file' => 'pages/activity-logs.php', 'roles' => [ROLE_ADMIN]],
     
     // Superadmin pages (can access everything)
     'superadmin-dashboard' => ['file' => 'pages/superadmin-dashboard.php', 'roles' => [ROLE_SUPERADMIN]],
     'admin-management' => ['file' => 'pages/admin-management.php', 'roles' => [ROLE_SUPERADMIN]],
+    'activity-logs' => ['file' => 'pages/activity-logs.php', 'roles' => [ROLE_SUPERADMIN]],
 ];
 
 // If no nav specified, redirect logged-in users to their dashboard; otherwise show public home
