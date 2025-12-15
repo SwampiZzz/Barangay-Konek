@@ -285,11 +285,6 @@ $flash = flash_get();
                                     </td>
                                     <td class="py-3 px-4 text-end">
                                         <div class="btn-group" role="group">
-                                            <button class="btn btn-sm btn-outline-warning" 
-                                                    onclick="editAdmin(<?php echo $admin['id']; ?>, '<?php echo htmlspecialchars($admin['username']); ?>', '<?php echo htmlspecialchars($admin['first_name']); ?>', '<?php echo htmlspecialchars($admin['last_name']); ?>', '<?php echo htmlspecialchars($admin['email'] ?? ''); ?>', '<?php echo htmlspecialchars($admin['contact_number'] ?? ''); ?>')"
-                                                    title="Edit admin">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
                                             <form method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this admin account? This action cannot be undone.');">
                                                 <input type="hidden" name="action" value="delete_admin">
                                                 <input type="hidden" name="admin_id" value="<?php echo $admin['id']; ?>">
