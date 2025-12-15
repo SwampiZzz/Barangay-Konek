@@ -193,7 +193,7 @@ require_once __DIR__ . '/../public/header.php';
     <div class="row mb-4">
         <div class="col-md-8">
             <h2 class="mb-2"><i class="fas fa-users me-2"></i>Manage Users</h2>
-            <p class="text-muted mb-0">Residents of <strong><?php echo htmlspecialchars($barangay_name); ?></strong></p>
+            <p class="text-muted mb-0">Active Residents of <strong><?php echo htmlspecialchars($barangay_name); ?></strong></p>
             <small class="text-muted">Showing <?php echo $showing_users; ?> of <?php echo $total_users; ?> user<?php echo $total_users === 1 ? '' : 's'; ?></small>
         </div>
         <div class="col-md-4">
